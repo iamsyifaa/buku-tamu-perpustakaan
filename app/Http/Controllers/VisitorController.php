@@ -8,25 +8,25 @@ use Illuminate\Http\Request;
 
 class VisitorController extends Controller
 {
-    // Halaman utama: form login + link ke register
     public function index()
     {
         return view('visitor.login');
     }
 
-    // Halaman register
     public function showRegister()
     {
         return view('visitor.register');
     }
 
-    // Proses register
     public function register(Request $request)
     {
         $request->validate([
-            'name'    => 'required|string|max:100',
-            'address' => 'nullable|string|max:200',
-            'phone'   => 'nullable|string|max:20',
+            'name'   => 'required|string|max:100',
+            'rw'     => 'required|string|max:3',
+            'rt'     => 'required|string|max:3',
+            'alamat' => 'nullable|string|max:200',
+            'umur'   => 'required|integer|min:1|max:120',
+            'desa'   => 'required|string|max:50',
         ]);
 
         $visitorId = Visitor::generateVisitorId($request->name);
@@ -34,8 +34,11 @@ class VisitorController extends Controller
         Visitor::create([
             'visitor_id' => $visitorId,
             'name'       => $request->name,
-            'address'    => $request->address,
-            'phone'      => $request->phone,
+            'rw'         => $request->rw,
+            'rt'         => $request->rt,
+            'alamat'     => $request->alamat,
+            'umur'       => $request->umur,
+            'desa'       => $request->desa,
         ]);
 
         return response()->json([
@@ -45,46 +48,33 @@ class VisitorController extends Controller
         ]);
     }
 
-    // Proses login dengan visitor_id
     public function login(Request $request)
     {
-        $request->validate([
-            'visitor_id' => 'required|string',
-        ]);
+        $request->validate(['visitor_id' => 'required|string']);
 
         $visitor = Visitor::where('visitor_id', $request->visitor_id)->first();
 
         if (!$visitor) {
-            return response()->json([
-                'success' => false,
-                'message' => 'ID pengunjung tidak ditemukan.',
-            ], 404);
+            return response()->json(['success' => false, 'message' => 'ID pengunjung tidak ditemukan.'], 404);
         }
 
-        // Simpan ke session
         session(['visitor' => $visitor]);
 
-        return response()->json([
-            'success' => true,
-            'name'    => $visitor->name,
-        ]);
+        return response()->json(['success' => true, 'name' => $visitor->name]);
     }
 
-    // Halaman aktivitas (setelah login)
     public function aktivitas()
     {
         if (!session('visitor')) {
             return redirect()->route('visitor.login');
         }
-
         return view('visitor.aktivitas', ['visitor' => session('visitor')]);
     }
 
-    // Proses simpan aktivitas
     public function simpanAktivitas(Request $request)
     {
         $request->validate([
-            'aktivitas' => 'required|array|min:1',
+            'aktivitas'   => 'required|array|min:1',
             'aktivitas.*' => 'in:baca_buku,pinjam_buku,belajar_komputer',
         ]);
 
@@ -95,13 +85,12 @@ class VisitorController extends Controller
         }
 
         Visit::create([
-            'visitor_id'      => $visitor->id,
-            'baca_buku'       => in_array('baca_buku', $request->aktivitas),
-            'pinjam_buku'     => in_array('pinjam_buku', $request->aktivitas),
+            'visitor_id'       => $visitor->id,
+            'baca_buku'        => in_array('baca_buku', $request->aktivitas),
+            'pinjam_buku'      => in_array('pinjam_buku', $request->aktivitas),
             'belajar_komputer' => in_array('belajar_komputer', $request->aktivitas),
         ]);
 
-        // Hapus session setelah selesai
         session()->forget('visitor');
 
         return response()->json(['success' => true]);

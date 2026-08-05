@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class Visitor extends Model
 {
-    protected $fillable = ['visitor_id', 'name', 'address', 'phone'];
+    protected $fillable = ['visitor_id', 'name', 'rw', 'rt', 'alamat', 'umur', 'desa'];
 
     public function visits()
     {
