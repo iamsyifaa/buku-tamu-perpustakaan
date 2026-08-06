@@ -97,18 +97,18 @@
 
         .stat-card {
             background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
-            padding: 14px 16px; display: flex; align-items: center; gap: 12px;
-            box-shadow: var(--shadow-card); transition: box-shadow 0.2s ease;
+            padding: 20px; display: flex; flex-direction: column; gap: 14px;
+            box-shadow: var(--shadow-card); transition: box-shadow 0.2s ease, transform 0.2s ease;
         }
-        .stat-card:hover { box-shadow: var(--shadow-card-hover); }
-        .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .stat-icon svg { width: 18px; height: 18px; }
+        .stat-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
+        .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .stat-icon svg { width: 19px; height: 19px; }
         .stat-icon.primary { background: var(--color-primary-tint); color: var(--color-primary); }
         .stat-icon.neutral { background: var(--color-neutral-tint); color: var(--color-ink-soft); }
         .stat-icon.accent  { background: var(--color-accent-tint); color: var(--color-accent-dark); }
         .stat-text { min-width: 0; }
-        .stat-num { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; line-height: 1.1; }
-        .stat-label { font-size: 0.7rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+        .stat-num { font-family: var(--font-display); font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
+        .stat-label { font-size: 0.74rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; white-space: nowrap; }
 
         .main-col { min-width: 0; }
 
