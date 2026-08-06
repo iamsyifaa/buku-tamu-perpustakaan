@@ -8,6 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <!-- Library export: dibuat di sisi browser (client-side), jadi tidak butuh
+         paket composer tambahan di server. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --color-bg: #F5F2ED;
@@ -38,7 +43,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; overflow-x: hidden; }
         body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-ink); min-height: 100vh; overflow-x: hidden; width: 100%; }
-        svg.icon { width: 18px; height: 18px; flex-shrink: 0; }
         ::selection { background: var(--color-accent); color: var(--color-primary-dark); }
 
         /* ---------- Navbar ---------- */
@@ -68,7 +72,8 @@
         .btn-logout svg { width: 14px; height: 14px; flex-shrink: 0; }
         .btn-logout:hover { background: rgba(255,255,255,0.16); }
 
-        .container { max-width: 1320px; margin: 0 auto; padding: 28px 24px 56px; }
+        /* Full-bleed: nempel ke pinggir layar, nggak dibatasin max-width lagi. */
+        .container { width: 100%; margin: 0; padding: 28px clamp(20px, 3vw, 48px) 56px; }
 
         .page-header { margin-bottom: 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         .page-header h1 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; color: var(--color-ink); }
@@ -82,33 +87,30 @@
         }
         .eyebrow svg { width: 14px; height: 14px; }
 
-        /* ---------- Stat cards ---------- */
-        .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 24px; }
-        @media(max-width:1180px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media(max-width:640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+        /* ---------- Layout: statistik jadi kolom kiri, konten di kanan ---------- */
+        .layout-grid { display: grid; grid-template-columns: 260px minmax(0,1fr); gap: 20px; align-items: start; }
+        @media(max-width:900px) { .layout-grid { grid-template-columns: 1fr; } }
+
+        .stats-col { display: flex; flex-direction: column; gap: 12px; }
+        @media(max-width:900px) { .stats-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; } }
+        @media(max-width:560px) { .stats-col { grid-template-columns: repeat(2, 1fr); } }
+
         .stat-card {
             background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
-            padding: 18px; display: flex; flex-direction: column; gap: 12px;
-            box-shadow: var(--shadow-card); transition: box-shadow 0.2s ease, transform 0.2s ease;
+            padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+            box-shadow: var(--shadow-card); transition: box-shadow 0.2s ease;
         }
-        .stat-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
-        .stat-icon {
-            width: 36px; height: 36px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .stat-card:hover { box-shadow: var(--shadow-card-hover); }
+        .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .stat-icon svg { width: 18px; height: 18px; }
         .stat-icon.primary { background: var(--color-primary-tint); color: var(--color-primary); }
         .stat-icon.neutral { background: var(--color-neutral-tint); color: var(--color-ink-soft); }
         .stat-icon.accent  { background: var(--color-accent-tint); color: var(--color-accent-dark); }
-        .stat-num { font-family: var(--font-display); font-size: 1.65rem; font-weight: 600; line-height: 1; }
-        .stat-label { font-size: 0.72rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-text { min-width: 0; }
+        .stat-num { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; line-height: 1.1; }
+        .stat-label { font-size: 0.7rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
 
-        /* ---------- Layout dua kolom ---------- */
-        .dashboard-grid { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 20px; align-items: start; min-width: 0; }
-        @media(max-width:1100px) { .dashboard-grid { grid-template-columns: minmax(0,1fr); } }
         .main-col { min-width: 0; }
-        .side-col { min-width: 0; position: sticky; top: 84px; }
-        @media(max-width:1100px) { .side-col { position: static; } }
 
         /* ---------- Filter panel ---------- */
         .filter-panel {
@@ -117,8 +119,14 @@
         }
         .filter-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
         .filter-panel-head .eyebrow { margin-bottom: 0; }
-        .link-reset { font-size: 0.8rem; color: var(--color-ink-soft); text-decoration: none; font-weight: 500; }
-        .link-reset:hover { color: var(--color-danger); }
+        .btn-reset-filter {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.8rem; font-weight: 600; color: var(--color-danger);
+            background: var(--color-danger-tint); border: 1px solid transparent;
+            padding: 8px 15px; border-radius: 20px; text-decoration: none; transition: all 0.15s;
+        }
+        .btn-reset-filter svg { width: 13px; height: 13px; }
+        .btn-reset-filter:hover { background: var(--color-danger); color: #fff; }
         .filter-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)) 1.5fr; gap: 12px; align-items: end; }
         @media(max-width:920px) { .filter-row { grid-template-columns: repeat(2, minmax(0,1fr)); } }
         @media(max-width:520px) { .filter-row { grid-template-columns: 1fr; } }
@@ -139,8 +147,10 @@
         .search-wrap input { padding-left: 32px; }
         .filter-hint { font-size: 0.74rem; color: var(--color-ink-faint); margin-top: 12px; }
 
-        /* ---------- Pills aktivitas ---------- */
-        .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        /* ---------- Pills ---------- */
+        .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .pills-secondary { margin-bottom: 18px; padding: 12px 14px; background: var(--color-primary-tint); border-radius: var(--radius-md); }
+        .pills-secondary-label { width: 100%; font-size: 0.72rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
         .pill {
             padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--color-border);
             background: var(--color-surface); font-size: 0.84rem; cursor: pointer;
@@ -151,28 +161,45 @@
         .pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
         .pill.active { background: var(--color-ink); color: #fff; border-color: var(--color-ink); }
         .pill.active svg { color: var(--color-accent); }
+        .pill-sm { padding: 6px 13px; font-size: 0.79rem; }
 
         /* ---------- Table ---------- */
-        .table-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+        .table-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); margin-bottom: 24px; }
         .table-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .table-header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .table-header-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
         .table-header-count { font-size: 0.8rem; color: var(--color-ink-soft); background: var(--color-primary-tint); padding: 4px 10px; border-radius: 20px; font-weight: 600; }
         .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; min-width: 780px; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; }
         thead { background: var(--color-primary-tint); }
-        th { padding: 12px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--color-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
-        td { padding: 14px 16px; font-size: 0.86rem; color: var(--color-ink); border-bottom: 1px solid var(--color-border); vertical-align: middle; white-space: nowrap; }
+        th { padding: 12px 14px; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--color-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        td { padding: 13px 14px; font-size: 0.86rem; color: var(--color-ink); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
         tbody tr:nth-child(even) td { background: var(--color-row-alt); }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover td { background: var(--color-row-hover); }
-        .visitor-id { font-weight: 600; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.82rem; }
+        .visitor-id { font-weight: 600; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.8rem; white-space: nowrap; }
         .visitor-name { font-weight: 600; }
-        .time-text { color: var(--color-ink-soft); font-size: 0.82rem; }
-        .status-dot { display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; }
-        .status-dot .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-ink-faint); }
-        .status-dot.yes .dot { background: var(--color-primary); }
-        .status-dot.yes { color: var(--color-ink); font-weight: 500; }
-        .status-dot.no { color: var(--color-ink-faint); }
+        .time-text { color: var(--color-ink-soft); font-size: 0.8rem; white-space: nowrap; }
+
+        /* Kolom aktivitas dipadatkan jadi ikon kecil, bukan kolom terpisah,
+           supaya tabel muat tanpa perlu digeser (scroll horizontal). */
+        .activity-icons { display: flex; gap: 5px; }
+        .act-badge {
+            min-width: 26px; height: 26px; padding: 0 6px; border-radius: 7px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+            background: var(--color-neutral-tint); color: var(--color-ink-faint); font-size: 0.72rem; font-weight: 700;
+        }
+        .act-badge svg { width: 13px; height: 13px; }
+        .act-badge.on { background: var(--color-primary-tint); color: var(--color-primary); }
+
+        .rank-badge {
+            width: 28px; height: 28px; border-radius: 50%; background: var(--color-neutral-tint);
+            color: var(--color-ink-soft); font-weight: 700; font-size: 0.82rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .rank-badge.gold { background: var(--color-accent-tint); color: var(--color-accent-dark); }
+        .nilai-peringkat { font-weight: 700; color: var(--color-primary); font-size: 0.95rem; }
+
         .btn-detail {
             padding: 6px 14px; background: transparent; color: var(--color-primary);
             border: 1.5px solid var(--color-primary); border-radius: var(--radius-md); font-size: 0.78rem;
@@ -182,6 +209,31 @@
         .empty-msg { text-align: center; padding: 56px 20px; color: var(--color-ink-faint); }
         .empty-msg svg { width: 36px; height: 36px; margin-bottom: 10px; color: var(--color-ink-faint); }
         .empty-msg p { font-size: 0.9rem; }
+
+        /* ---------- Export dropdown ---------- */
+        .export-wrap { position: relative; }
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px;
+            background: var(--color-ink); color: #fff; border: none; border-radius: 20px;
+            font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+        }
+        .btn-export svg { width: 15px; height: 15px; }
+        .btn-export:hover:not(:disabled) { background: var(--color-primary-dark); }
+        .btn-export:disabled { opacity: 0.6; cursor: wait; }
+        .export-menu {
+            display: none; position: absolute; right: 0; top: calc(100% + 8px);
+            background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+            box-shadow: var(--shadow-card-hover); min-width: 230px; padding: 6px; z-index: 60;
+        }
+        .export-menu.open { display: block; }
+        .export-menu-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px; width: 100%;
+            border-radius: 8px; text-decoration: none; color: var(--color-ink); transition: background 0.15s;
+            background: none; border: none; cursor: pointer; font-family: var(--font-body); text-align: left;
+        }
+        .export-menu-item:hover { background: var(--color-primary-tint); }
+        .export-menu-item svg { width: 17px; height: 17px; color: var(--color-primary); flex-shrink: 0; }
+        .export-menu-title { font-size: 0.85rem; font-weight: 600; }
 
         /* ---------- Pagination ---------- */
         .pagination { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--color-border); }
@@ -194,33 +246,6 @@
         .page-btn svg { width: 14px; height: 14px; }
         .page-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
         .page-btn.disabled { opacity: 0.4; pointer-events: none; }
-
-        /* ---------- Top Visitors (sidebar) ---------- */
-        .top-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-card); }
-        .top-card-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-        .top-card-head .eyebrow { margin-bottom: 0; }
-        .top-card-head select {
-            padding: 9px 30px 9px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
-            font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; color: var(--color-ink);
-            background: var(--color-surface); outline: none; cursor: pointer; appearance: none; width: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%2355637A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 11px center;
-        }
-        .top-card-head select:focus { border-color: var(--color-primary); }
-        .top-item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--color-border); }
-        .top-item:last-child { border-bottom: none; }
-        .top-rank {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--color-neutral-tint);
-            color: var(--color-ink-soft); font-weight: 700; font-size: 0.82rem;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .top-rank.gold { background: var(--color-accent-tint); color: var(--color-accent-dark); }
-        .top-info { flex: 1; min-width: 0; }
-        .top-name { font-weight: 600; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .top-id { font-size: 0.74rem; color: var(--color-ink-soft); font-family: var(--font-mono); }
-        .top-count { font-weight: 700; font-size: 1rem; color: var(--color-primary); text-align: right; }
-        .top-count-label { font-size: 0.68rem; color: var(--color-ink-faint); text-align: right; }
-        .top-empty { text-align: center; padding: 30px; color: var(--color-ink-faint); font-size: 0.86rem; }
 
         /* ---------- Modal ---------- */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,39,63,0.5); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
@@ -245,14 +270,25 @@
         .stat-mini-num { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-primary-dark); }
         .stat-mini-label { font-size: 0.66rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
 
-        /* ---------- Responsif tambahan ---------- */
         @media(max-width:480px) {
-            .container { padding: 20px 14px 44px; }
-            .navbar { padding: 0 16px; }
+            .container { padding: 18px 12px 40px; }
+            .navbar { padding: 0 14px; }
             .navbar-username { display: none; }
             .btn-logout span.btn-logout-text { display: none; }
             .btn-logout { padding: 8px; }
-            .page-header h1 { font-size: 1.35rem; }
+            .page-header { margin-bottom: 18px; }
+            .page-header h1 { font-size: 1.3rem; }
+            .page-header-date { font-size: 0.74rem; }
+            .filter-panel { padding: 14px; }
+            .filter-panel-head { align-items: flex-start; }
+            .table-header { padding: 12px 14px; }
+            .table-header-title { font-size: 0.95rem; }
+            th, td { padding: 10px 10px; font-size: 0.8rem; }
+            .btn-export span#btn-export-label { display: none; }
+            .btn-export { padding: 8px; }
+            .export-menu { right: -8px; min-width: 210px; }
+            .modal-box { max-width: 100%; }
+            .detail-grid, .stat-row { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -288,38 +324,37 @@
         <div class="page-header-date">{{ now()->translatedFormat('l, d F Y') }}</div>
     </div>
 
-    <!-- Statistik -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
-            <div><div class="stat-num">{{ $stats['total_kunjungan'] }}</div><div class="stat-label">Total Kunjungan</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-            <div><div class="stat-num">{{ $stats['total_pengunjung'] }}</div><div class="stat-label">Terdaftar</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-            <div><div class="stat-num">{{ $stats['hari_ini'] }}</div><div class="stat-label">Hari Ini</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-            <div><div class="stat-num">{{ $stats['baca_buku'] }}</div><div class="stat-label">Baca Buku</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
-            <div><div class="stat-num">{{ $stats['pinjam_buku'] }}</div><div class="stat-label">Pinjam Buku</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-            <div><div class="stat-num">{{ $stats['belajar_komputer'] }}</div><div class="stat-label">Belajar Komputer</div></div>
-        </div>
-    </div>
+    <div class="layout-grid">
 
-    <!-- Layout dua kolom: konten utama + sidebar -->
-    <div class="dashboard-grid">
+        <!-- Kolom kiri: statistik -->
+        <aside class="stats-col">
+            <div class="stat-card">
+                <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+                <div class="stat-text"><div class="stat-num">{{ $stats['total_kunjungan'] }}</div><div class="stat-label">Total Kunjungan</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                <div class="stat-text"><div class="stat-num">{{ $stats['total_pengunjung'] }}</div><div class="stat-label">Terdaftar</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div class="stat-text"><div class="stat-num">{{ $stats['hari_ini'] }}</div><div class="stat-label">Hari Ini</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+                <div class="stat-text"><div class="stat-num">{{ $stats['baca_buku'] }}</div><div class="stat-label">Baca Buku</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+                <div class="stat-text"><div class="stat-num">{{ $stats['pinjam_buku'] }}</div><div class="stat-label">Pinjam Buku</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                <div class="stat-text"><div class="stat-num">{{ $stats['belajar_komputer'] }}</div><div class="stat-label">Belajar Komputer</div></div>
+            </div>
+        </aside>
 
-        <!-- Kolom utama -->
+        <!-- Kolom kanan: filter + tabel -->
         <div class="main-col">
 
             <!-- Filter Panel -->
@@ -329,7 +364,10 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         Filter Data
                     </div>
-                    <a href="{{ route('admin.dashboard') }}" class="link-reset">Hapus semua filter</a>
+                    <a href="{{ route('admin.dashboard') }}" class="btn-reset-filter">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        Hapus semua filter
+                    </a>
                 </div>
                 <form method="GET" action="{{ route('admin.dashboard') }}" id="filterForm">
                     <input type="hidden" name="filter" value="{{ $filter }}">
@@ -384,13 +422,14 @@
                 <div class="filter-hint">Filter otomatis diterapkan begitu kamu ganti pilihan atau berhenti mengetik.</div>
             </div>
 
-            <!-- Pills aktivitas -->
+            <!-- Pills utama -->
             @php
                 $filterOptions = [
                     'semua'            => ['label' => 'Semua Kunjungan', 'icon' => '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'],
                     'baca_buku'        => ['label' => 'Baca Buku', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'],
                     'pinjam_buku'      => ['label' => 'Pinjam Buku', 'icon' => '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>'],
                     'belajar_komputer' => ['label' => 'Belajar Komputer', 'icon' => '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
+                    'pengunjung_terbanyak' => ['label' => 'Pengunjung Terbanyak', 'icon' => '<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>'],
                 ];
             @endphp
             <div class="pills">
@@ -403,13 +442,104 @@
                 @endforeach
             </div>
 
+            <!-- Sub-filter kategori peringkat, cuma muncul pas mode Pengunjung Terbanyak -->
+            @if($isTopMode)
+                @php
+                    $peringkatOptions = [
+                        'semua'            => 'Semua Kunjungan',
+                        'baca_buku'        => 'Baca Buku',
+                        'pinjam_buku'      => 'Pinjam Buku',
+                        'belajar_komputer' => 'Belajar Komputer',
+                    ];
+                @endphp
+                <div class="pills pills-secondary">
+                    <div class="pills-secondary-label">Urutkan berdasarkan</div>
+                    @foreach($peringkatOptions as $key => $label)
+                        <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['peringkat' => $key])) }}"
+                           class="pill pill-sm {{ $peringkat === $key ? 'active' : '' }}">
+                            {{ $label }}
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+
             <!-- Tabel -->
             <div class="table-card">
                 <div class="table-header">
-                    <div class="table-header-title">Data Kunjungan</div>
-                    <div class="table-header-count">{{ $visits->total() }} data ditemukan</div>
+                    <div class="table-header-left">
+                        <div class="table-header-title">{{ $isTopMode ? 'Pengunjung Terbanyak' : 'Data Kunjungan' }}</div>
+                        <div class="table-header-count">
+                            {{ $isTopMode ? $topVisitors->count() : $visits->total() }} data ditemukan
+                        </div>
+                    </div>
+                    <div class="export-wrap">
+                        <button type="button" class="btn-export" id="btn-export" onclick="toggleExportMenu()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span id="btn-export-label">Export</span>
+                        </button>
+                        <div class="export-menu" id="export-menu">
+                            <button type="button" class="export-menu-item" onclick="exportSekarang('excel')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <div class="export-menu-title">Export sebagai Excel</div>
+                            </button>
+                            <button type="button" class="export-menu-item" onclick="exportSekarang('pdf')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="10" y1="12" x2="14" y2="12"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+                                <div class="export-menu-title">Export sebagai PDF</div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="table-scroll">
+                @if($isTopMode)
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Peringkat</th>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Lokasi</th>
+                                <th>Aktivitas</th>
+                                <th>Nilai ({{ $labelPeringkat }})</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topVisitors as $idx => $top)
+                            <tr>
+                                <td><span class="rank-badge {{ $idx === 0 ? 'gold' : '' }}">{{ $idx + 1 }}</span></td>
+                                <td><span class="visitor-id">{{ $top->visitor_id }}</span></td>
+                                <td><span class="visitor-name">{{ $top->name }}</span></td>
+                                <td><span class="time-text">RW{{ $top->rw ?? '-' }}/RT{{ $top->rt ?? '-' }}</span></td>
+                                <td>
+                                    <div class="activity-icons">
+                                        <span class="act-badge {{ $top->baca_buku_count > 0 ? 'on' : '' }}" title="Baca Buku">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>{{ $top->baca_buku_count }}
+                                        </span>
+                                        <span class="act-badge {{ $top->pinjam_buku_count > 0 ? 'on' : '' }}" title="Pinjam Buku">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>{{ $top->pinjam_buku_count }}
+                                        </span>
+                                        <span class="act-badge {{ $top->belajar_komputer_count > 0 ? 'on' : '' }}" title="Belajar Komputer">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>{{ $top->belajar_komputer_count }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td><span class="nilai-peringkat">{{ $top->{$kolomPeringkat} }}</span></td>
+                                <td><button class="btn-detail" onclick="showDetail({{ $top->id }})">Detail</button></td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-msg">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                                        <p>Belum ada data untuk kategori ini.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                @else
                     <table>
                         <thead>
                             <tr>
@@ -417,10 +547,8 @@
                                 <th>Waktu</th>
                                 <th>ID</th>
                                 <th>Nama</th>
-                                <th>RW/RT</th>
-                                <th>Baca Buku</th>
-                                <th>Pinjam Buku</th>
-                                <th>Belajar Komputer</th>
+                                <th>Lokasi</th>
+                                <th>Aktivitas</th>
                                 <th>Detail</th>
                             </tr>
                         </thead>
@@ -428,16 +556,26 @@
                             @forelse($visits as $i => $visit)
                             <tr>
                                 <td>{{ $visits->firstItem() + $i }}</td>
-                                <td><span class="time-text">{{ $visit->visited_at->format('d/m/Y H:i') }}</span></td>
+                                <td><span class="time-text">{{ $visit->visited_at->format('d/m/y H:i') }}</span></td>
                                 <td><span class="visitor-id">{{ $visit->visitor->visitor_id ?? '-' }}</span></td>
                                 <td><span class="visitor-name">{{ $visit->visitor->name ?? '-' }}</span></td>
                                 <td><span class="time-text">RW{{ $visit->visitor->rw ?? '-' }}/RT{{ $visit->visitor->rt ?? '-' }}</span></td>
-                                <td><span class="status-dot {{ $visit->baca_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->baca_buku ? 'Ya' : 'Tidak' }}</span></td>
-                                <td><span class="status-dot {{ $visit->pinjam_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->pinjam_buku ? 'Ya' : 'Tidak' }}</span></td>
-                                <td><span class="status-dot {{ $visit->belajar_komputer ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->belajar_komputer ? 'Ya' : 'Tidak' }}</span></td>
+                                <td>
+                                    <div class="activity-icons">
+                                        <span class="act-badge {{ $visit->baca_buku ? 'on' : '' }}" title="Baca Buku: {{ $visit->baca_buku ? 'Ya' : 'Tidak' }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                        </span>
+                                        <span class="act-badge {{ $visit->pinjam_buku ? 'on' : '' }}" title="Pinjam Buku: {{ $visit->pinjam_buku ? 'Ya' : 'Tidak' }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                        </span>
+                                        <span class="act-badge {{ $visit->belajar_komputer ? 'on' : '' }}" title="Belajar Komputer: {{ $visit->belajar_komputer ? 'Ya' : 'Tidak' }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
                                 <td>
                                     @if($visit->visitor)
-                                    <button class="btn-detail" onclick="showDetail({{ $visit->visitor->id }})">Lihat Detail</button>
+                                    <button class="btn-detail" onclick="showDetail({{ $visit->visitor->id }})">Detail</button>
                                     @else
                                     <span style="color:var(--color-ink-faint);font-size:0.8rem">-</span>
                                     @endif
@@ -445,7 +583,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9">
+                                <td colspan="7">
                                     <div class="empty-msg">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                                         <p>Belum ada data kunjungan.</p>
@@ -455,9 +593,10 @@
                             @endforelse
                         </tbody>
                     </table>
+                @endif
                 </div>
 
-                @if($visits->hasPages())
+                @if(!$isTopMode && $visits->hasPages())
                 <div class="pagination">
                     @if(!$visits->onFirstPage())
                         <a href="{{ $visits->previousPageUrl() }}" class="page-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</a>
@@ -475,55 +614,6 @@
             </div>
 
         </div>
-
-        <!-- Sidebar: Top Pengunjung -->
-        <aside class="side-col">
-            <div class="top-card">
-                <div class="top-card-head">
-                    <div class="eyebrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-                        Pengunjung Terbanyak
-                    </div>
-                    <select id="peringkat-select" onchange="gantiPeringkat(this.value)">
-                        <option value="kunjungan" {{ $peringkat === 'kunjungan' ? 'selected' : '' }}>Kunjungan terbanyak</option>
-                        <option value="baca_buku" {{ $peringkat === 'baca_buku' ? 'selected' : '' }}>Paling sering baca buku</option>
-                        <option value="pinjam_buku" {{ $peringkat === 'pinjam_buku' ? 'selected' : '' }}>Paling sering pinjam buku</option>
-                        <option value="belajar_komputer" {{ $peringkat === 'belajar_komputer' ? 'selected' : '' }}>Paling sering belajar komputer</option>
-                    </select>
-                </div>
-
-                @php
-                    $countKey = match($peringkat) {
-                        'baca_buku' => 'baca_buku_count',
-                        'pinjam_buku' => 'pinjam_buku_count',
-                        'belajar_komputer' => 'belajar_komputer_count',
-                        default => 'visits_count',
-                    };
-                    $countLabel = match($peringkat) {
-                        'baca_buku' => 'kali baca',
-                        'pinjam_buku' => 'kali pinjam',
-                        'belajar_komputer' => 'kali belajar',
-                        default => 'kunjungan',
-                    };
-                @endphp
-
-                @forelse($topVisitors as $idx => $top)
-                <div class="top-item">
-                    <div class="top-rank {{ $idx === 0 ? 'gold' : '' }}">{{ $idx + 1 }}</div>
-                    <div class="top-info">
-                        <div class="top-name">{{ $top->name }}</div>
-                        <div class="top-id">{{ $top->visitor_id }} &middot; RW{{ $top->rw }}/RT{{ $top->rt }}</div>
-                    </div>
-                    <div>
-                        <div class="top-count">{{ $top->{$countKey} }}</div>
-                        <div class="top-count-label">{{ $countLabel }}</div>
-                    </div>
-                </div>
-                @empty
-                <div class="top-empty">Belum ada data untuk kategori ini.</div>
-                @endforelse
-            </div>
-        </aside>
 
     </div>
 
@@ -547,6 +637,7 @@
 
 <script>
 const detailUrl = "{{ url('admin/visitor') }}";
+const exportDataUrl = "{{ route('admin.export-data') }}";
 
 function showDetail(id) {
     document.getElementById('modal-detail').classList.add('active');
@@ -630,11 +721,192 @@ document.getElementById('search-input').addEventListener('input', function () {
     }, 500);
 });
 
-// Ganti kategori leaderboard "Pengunjung Terbanyak" tanpa tombol terapkan.
-function gantiPeringkat(value) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('peringkat', value);
-    window.location.href = url.toString();
+// Dropdown menu export: toggle buka/tutup, tutup kalau klik di luar.
+function toggleExportMenu() {
+    document.getElementById('export-menu').classList.toggle('open');
+}
+document.addEventListener('click', function (e) {
+    const wrap = document.querySelector('.export-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+        document.getElementById('export-menu').classList.remove('open');
+    }
+});
+
+// ================= EXPORT (mengikuti filter & mode tabel yang aktif) =================
+async function exportSekarang(format) {
+    document.getElementById('export-menu').classList.remove('open');
+
+    const btn = document.getElementById('btn-export');
+    const btnLabel = document.getElementById('btn-export-label');
+    btn.disabled = true;
+    btnLabel.textContent = 'Menyiapkan...';
+
+    try {
+        const res = await fetch(exportDataUrl + window.location.search);
+        const data = await res.json();
+
+        if (!data.rows || data.rows.length === 0) {
+            alert('Tidak ada data untuk diekspor.');
+            return;
+        }
+
+        if (format === 'excel') {
+            await exportExcel(data);
+        } else {
+            exportPdf(data);
+        }
+    } catch (err) {
+        alert('Gagal menyiapkan file export. Coba lagi.');
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btnLabel.textContent = 'Export';
+    }
+}
+
+function kolomExport(mode) {
+    if (mode === 'pengunjung_terbanyak') {
+        return [
+            { header: 'No', key: 'no', width: 6 },
+            { header: 'ID Pengunjung', key: 'id', width: 16 },
+            { header: 'Nama', key: 'nama', width: 24 },
+            { header: 'Desa', key: 'desa', width: 16 },
+            { header: 'RW', key: 'rw', width: 8 },
+            { header: 'RT', key: 'rt', width: 8 },
+            { header: 'Total Kunjungan', key: 'total_kunjungan', width: 14 },
+            { header: 'Baca Buku', key: 'baca_buku', width: 12 },
+            { header: 'Pinjam Buku', key: 'pinjam_buku', width: 12 },
+            { header: 'Belajar Komputer', key: 'belajar_komputer', width: 15 },
+        ];
+    }
+    return [
+        { header: 'No', key: 'no', width: 6 },
+        { header: 'Waktu', key: 'waktu', width: 16 },
+        { header: 'ID Pengunjung', key: 'id', width: 16 },
+        { header: 'Nama', key: 'nama', width: 22 },
+        { header: 'Desa', key: 'desa', width: 14 },
+        { header: 'RW', key: 'rw', width: 7 },
+        { header: 'RT', key: 'rt', width: 7 },
+        { header: 'Alamat', key: 'alamat', width: 22 },
+        { header: 'Umur', key: 'umur', width: 8 },
+        { header: 'Baca Buku', key: 'baca_buku', width: 11 },
+        { header: 'Pinjam Buku', key: 'pinjam_buku', width: 12 },
+        { header: 'Belajar Komputer', key: 'belajar_komputer', width: 15 },
+    ];
+}
+
+async function exportExcel(data) {
+    const kolom = kolomExport(data.mode);
+    const jumlahKolom = kolom.length;
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Perpustakaan Desa';
+    wb.created = new Date();
+    const ws = wb.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: 4 }] });
+    ws.columns = kolom.map(k => ({ width: k.width }));
+
+    ws.mergeCells(1, 1, 1, jumlahKolom);
+    const judul = ws.getCell(1, 1);
+    judul.value = data.judul.toUpperCase();
+    judul.font = { bold: true, size: 14, color: { argb: 'FF13273F' } };
+    ws.getRow(1).height = 24;
+
+    ws.mergeCells(2, 1, 2, jumlahKolom);
+    const sub = ws.getCell(2, 1);
+    sub.value = `Periode: ${data.periode}  |  Tanggal Export: ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`;
+    sub.font = { italic: true, size: 10.5, color: { argb: 'FF55637A' } };
+
+    const headerRow = ws.getRow(4);
+    kolom.forEach((k, i) => {
+        const cell = headerRow.getCell(i + 1);
+        cell.value = k.header;
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13273F' } };
+        cell.alignment = { vertical: 'middle', horizontal: i === 0 ? 'center' : 'left' };
+        cell.border = {
+            top: { style: 'thin', color: { argb: 'FF0B1A2B' } }, bottom: { style: 'thin', color: { argb: 'FF0B1A2B' } },
+            left: { style: 'thin', color: { argb: 'FF0B1A2B' } }, right: { style: 'thin', color: { argb: 'FF0B1A2B' } },
+        };
+    });
+    headerRow.height = 20;
+
+    data.rows.forEach((r, i) => {
+        const row = ws.getRow(5 + i);
+        kolom.forEach((k, c) => {
+            const cell = row.getCell(c + 1);
+            cell.value = r[k.key] ?? '-';
+            cell.font = { size: 10.5, color: { argb: 'FF13273F' } };
+            cell.alignment = { vertical: 'middle', horizontal: c === 0 ? 'center' : 'left' };
+            cell.border = {
+                top: { style: 'thin', color: { argb: 'FFE5E2D9' } }, bottom: { style: 'thin', color: { argb: 'FFE5E2D9' } },
+                left: { style: 'thin', color: { argb: 'FFE5E2D9' } }, right: { style: 'thin', color: { argb: 'FFE5E2D9' } },
+            };
+            if (i % 2 === 1) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFAF8F4' } };
+        });
+        row.height = 18;
+    });
+
+    const totalRowIdx = 5 + data.rows.length + 1;
+    ws.mergeCells(totalRowIdx, 1, totalRowIdx, jumlahKolom);
+    const totalCell = ws.getCell(totalRowIdx, 1);
+    totalCell.value = `Total: ${data.rows.length} data`;
+    totalCell.font = { bold: true, size: 10.5, color: { argb: 'FF13273F' } };
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    unduhBlob(blob, namaFileExport(data, 'xlsx'));
+}
+
+function exportPdf(data) {
+    const { jsPDF } = window.jspdf;
+    const kolom = kolomExport(data.mode);
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(19, 39, 63);
+    doc.text(data.judul.toUpperCase(), 40, 40);
+
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(9.5);
+    doc.setTextColor(85, 99, 122);
+    const tanggalExport = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+    doc.text(`Periode: ${data.periode}   |   Tanggal Export: ${tanggalExport}`, 40, 56);
+
+    doc.autoTable({
+        startY: 72,
+        head: [kolom.map(k => k.header)],
+        body: data.rows.map(r => kolom.map(k => String(r[k.key] ?? '-'))),
+        styles: { font: 'helvetica', fontSize: 8.5, textColor: [19, 39, 63], lineColor: [229, 226, 217], lineWidth: 0.5 },
+        headStyles: { fillColor: [19, 39, 63], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [250, 248, 244] },
+        margin: { left: 40, right: 40 },
+    });
+
+    const finalY = doc.lastAutoTable.finalY || 72;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(19, 39, 63);
+    doc.text(`Total: ${data.rows.length} data`, 40, finalY + 20);
+
+    doc.save(namaFileExport(data, 'pdf'));
+}
+
+function namaFileExport(data, ext) {
+    const slug = data.judul.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const tanggal = new Date().toISOString().slice(0, 10);
+    return `${slug}-${tanggal}.${ext}`;
+}
+
+function unduhBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 </script>
 </body>

@@ -17,4 +17,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/visitor/{id}', [AdminController::class, 'detailVisitor'])->name('visitor.detail');
+    Route::get('/export-data', [AdminController::class, 'exportData'])->name('export-data');
 });
