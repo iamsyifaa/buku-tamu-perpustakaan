@@ -10,20 +10,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-bg: #F4F6F1;
+            --color-bg: #F5F2ED;
             --color-surface: #FFFFFF;
-            --color-ink: #1E2A22;
-            --color-ink-soft: #647065;
-            --color-ink-faint: #97A196;
-            --color-primary: #1F5F3A;
-            --color-primary-dark: #163F27;
-            --color-primary-tint: #E7F0E9;
-            --color-accent: #A8823A;
-            --color-accent-tint: #F6EEDD;
-            --color-neutral-tint: #EEF0EB;
-            --color-border: #DFE5DA;
+            --color-ink: #13273F;
+            --color-ink-soft: #55637A;
+            --color-ink-faint: #92A0B3;
+            --color-primary: #13273F;
+            --color-primary-dark: #0B1A2B;
+            --color-primary-tint: #E8ECF1;
+            --color-accent: #E9D4C3;
+            --color-accent-dark: #A07B52;
+            --color-accent-tint: #F8F0E7;
+            --color-neutral-tint: #EEF0F3;
+            --color-border: #E5E2D9;
+            --color-row-hover: #F7F4EF;
+            --color-row-alt: #FAF8F4;
             --color-danger: #AB4A34;
             --color-danger-tint: #F8EAE6;
+            --shadow-card: 0 1px 2px rgba(19,39,63,0.05), 0 1px 1px rgba(19,39,63,0.03);
+            --shadow-card-hover: 0 6px 16px -4px rgba(19,39,63,0.12);
             --radius-md: 10px;
             --radius-lg: 14px;
             --font-display: 'Fraunces', Georgia, serif;
@@ -31,24 +36,28 @@
             --font-mono: 'JetBrains Mono', ui-monospace, monospace;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-ink); min-height: 100vh; }
+        html { scroll-behavior: smooth; overflow-x: hidden; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-ink); min-height: 100vh; overflow-x: hidden; width: 100%; }
         svg.icon { width: 18px; height: 18px; flex-shrink: 0; }
+        ::selection { background: var(--color-accent); color: var(--color-primary-dark); }
 
-        /* Navbar */
+        /* ---------- Navbar ---------- */
         .navbar {
             background: var(--color-ink); border-bottom: 2px solid var(--color-accent);
-            color: #fff; padding: 0 28px;
+            color: #fff; padding: 0 24px;
             display: flex; align-items: center; justify-content: space-between;
-            height: 64px;
+            height: 64px; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 10px rgba(11,26,43,0.18);
         }
-        .navbar-brand { display: flex; align-items: center; gap: 10px; }
-        .navbar-brand svg { width: 22px; height: 22px; color: var(--color-accent); }
-        .navbar-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
-        .navbar-brand-text b { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .navbar-brand svg { width: 22px; height: 22px; color: var(--color-accent); flex-shrink: 0; }
+        .navbar-brand-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+        .navbar-brand-text b { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 46vw; }
         .navbar-brand-text span { font-size: 0.7rem; color: rgba(255,255,255,0.55); letter-spacing: 0.05em; text-transform: uppercase; }
-        .navbar-right { display: flex; align-items: center; gap: 16px; }
+        .navbar-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
         .navbar-user { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; color: rgba(255,255,255,0.85); }
-        .navbar-user svg { width: 15px; height: 15px; color: rgba(255,255,255,0.6); }
+        .navbar-user svg { width: 15px; height: 15px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
+        .navbar-username { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .btn-logout {
             display: flex; align-items: center; gap: 6px;
             color: #fff; text-decoration: none; font-size: 0.82rem; font-weight: 600;
@@ -56,70 +65,81 @@
             border-radius: 20px; border: 1px solid rgba(255,255,255,0.18);
             transition: background 0.15s;
         }
-        .btn-logout svg { width: 14px; height: 14px; }
+        .btn-logout svg { width: 14px; height: 14px; flex-shrink: 0; }
         .btn-logout:hover { background: rgba(255,255,255,0.16); }
 
-        .container { max-width: 1240px; margin: 0 auto; padding: 28px 20px 48px; }
+        .container { max-width: 1320px; margin: 0 auto; padding: 28px 24px 56px; }
 
-        .page-header { margin-bottom: 22px; }
-        .page-header h1 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--color-ink); }
-        .page-header p { color: var(--color-ink-soft); font-size: 0.88rem; margin-top: 3px; }
+        .page-header { margin-bottom: 24px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .page-header h1 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; color: var(--color-ink); }
+        .page-header p { color: var(--color-ink-soft); font-size: 0.9rem; margin-top: 4px; }
+        .page-header-date { font-size: 0.82rem; color: var(--color-ink-faint); font-weight: 500; }
 
         .eyebrow {
             display: flex; align-items: center; gap: 8px;
             font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-            color: var(--color-accent); margin-bottom: 14px;
+            color: var(--color-accent-dark); margin-bottom: 14px;
         }
         .eyebrow svg { width: 14px; height: 14px; }
 
-        /* Stat cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 22px; }
-        @media(max-width:1000px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media(max-width:560px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        /* ---------- Stat cards ---------- */
+        .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 24px; }
+        @media(max-width:1180px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media(max-width:640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
         .stat-card {
             background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
-            padding: 16px; display: flex; flex-direction: column; gap: 10px;
+            padding: 18px; display: flex; flex-direction: column; gap: 12px;
+            box-shadow: var(--shadow-card); transition: box-shadow 0.2s ease, transform 0.2s ease;
         }
+        .stat-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
         .stat-icon {
-            width: 34px; height: 34px; border-radius: 9px;
+            width: 36px; height: 36px; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
         }
-        .stat-icon svg { width: 17px; height: 17px; }
+        .stat-icon svg { width: 18px; height: 18px; }
         .stat-icon.primary { background: var(--color-primary-tint); color: var(--color-primary); }
         .stat-icon.neutral { background: var(--color-neutral-tint); color: var(--color-ink-soft); }
-        .stat-icon.accent  { background: var(--color-accent-tint); color: var(--color-accent); }
-        .stat-num { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; line-height: 1; }
+        .stat-icon.accent  { background: var(--color-accent-tint); color: var(--color-accent-dark); }
+        .stat-num { font-family: var(--font-display); font-size: 1.65rem; font-weight: 600; line-height: 1; }
         .stat-label { font-size: 0.72rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 
-        /* Filter panel */
+        /* ---------- Layout dua kolom ---------- */
+        .dashboard-grid { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 20px; align-items: start; min-width: 0; }
+        @media(max-width:1100px) { .dashboard-grid { grid-template-columns: minmax(0,1fr); } }
+        .main-col { min-width: 0; }
+        .side-col { min-width: 0; position: sticky; top: 84px; }
+        @media(max-width:1100px) { .side-col { position: static; } }
+
+        /* ---------- Filter panel ---------- */
         .filter-panel {
             background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
-            padding: 18px 20px; margin-bottom: 16px;
+            padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-card);
         }
-        .filter-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .filter-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
         .filter-panel-head .eyebrow { margin-bottom: 0; }
-        .link-reset { font-size: 0.8rem; color: var(--color-ink-soft); text-decoration: none; }
+        .link-reset { font-size: 0.8rem; color: var(--color-ink-soft); text-decoration: none; font-weight: 500; }
         .link-reset:hover { color: var(--color-danger); }
-        .filter-row { display: grid; grid-template-columns: repeat(4, 1fr) 1.6fr; gap: 12px; align-items: end; }
-        @media(max-width:900px) { .filter-row { grid-template-columns: repeat(2, 1fr); } }
-        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)) 1.5fr; gap: 12px; align-items: end; }
+        @media(max-width:920px) { .filter-row { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+        @media(max-width:520px) { .filter-row { grid-template-columns: 1fr; } }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
         .filter-group label { font-size: 0.74rem; color: var(--color-ink-soft); font-weight: 600; }
         .filter-group select, .filter-group input {
-            padding: 9px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
-            font-family: var(--font-body); font-size: 0.87rem; outline: none; background: var(--color-surface); color: var(--color-ink);
-            transition: border-color 0.15s, box-shadow 0.15s;
+            padding: 10px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+            font-family: var(--font-body); font-size: 0.88rem; outline: none; background: var(--color-surface); color: var(--color-ink);
+            transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
         }
         .filter-group select { appearance: none; cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%23647065' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%2355637A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px;
         }
         .filter-group select:focus, .filter-group input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-tint); }
         .search-wrap { position: relative; }
         .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--color-ink-faint); }
-        .search-wrap input { padding-left: 32px; width: 100%; }
-        .filter-hint { font-size: 0.74rem; color: var(--color-ink-faint); margin-top: 10px; }
+        .search-wrap input { padding-left: 32px; }
+        .filter-hint { font-size: 0.74rem; color: var(--color-ink-faint); margin-top: 12px; }
 
-        /* Pills aktivitas */
+        /* ---------- Pills aktivitas ---------- */
         .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
         .pill {
             padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--color-border);
@@ -132,17 +152,19 @@
         .pill.active { background: var(--color-ink); color: #fff; border-color: var(--color-ink); }
         .pill.active svg { color: var(--color-accent); }
 
-        /* Table */
-        .table-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
-        .table-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
-        .table-header-title { font-family: var(--font-display); font-size: 1rem; font-weight: 600; }
-        .table-header-count { font-size: 0.8rem; color: var(--color-ink-soft); }
-        table { width: 100%; border-collapse: collapse; }
+        /* ---------- Table ---------- */
+        .table-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+        .table-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .table-header-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+        .table-header-count { font-size: 0.8rem; color: var(--color-ink-soft); background: var(--color-primary-tint); padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; min-width: 780px; border-collapse: collapse; }
         thead { background: var(--color-primary-tint); }
-        th { padding: 11px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--color-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; }
-        td { padding: 13px 16px; font-size: 0.86rem; color: var(--color-ink); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+        th { padding: 12px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--color-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        td { padding: 14px 16px; font-size: 0.86rem; color: var(--color-ink); border-bottom: 1px solid var(--color-border); vertical-align: middle; white-space: nowrap; }
+        tbody tr:nth-child(even) td { background: var(--color-row-alt); }
         tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: #FAFBF8; }
+        tbody tr:hover td { background: var(--color-row-hover); }
         .visitor-id { font-weight: 600; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.82rem; }
         .visitor-name { font-weight: 600; }
         .time-text { color: var(--color-ink-soft); font-size: 0.82rem; }
@@ -161,8 +183,8 @@
         .empty-msg svg { width: 36px; height: 36px; margin-bottom: 10px; color: var(--color-ink-faint); }
         .empty-msg p { font-size: 0.9rem; }
 
-        /* Pagination */
-        .pagination { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); }
+        /* ---------- Pagination ---------- */
+        .pagination { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--color-border); }
         .page-info { font-size: 0.82rem; color: var(--color-ink-soft); }
         .page-btn {
             padding: 7px 14px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border);
@@ -173,38 +195,37 @@
         .page-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
         .page-btn.disabled { opacity: 0.4; pointer-events: none; }
 
-        /* Top Visitors */
-        .top-section { margin-top: 22px; }
-        .top-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px 20px; }
-        .top-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+        /* ---------- Top Visitors (sidebar) ---------- */
+        .top-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-card); }
+        .top-card-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
         .top-card-head .eyebrow { margin-bottom: 0; }
         .top-card-head select {
-            padding: 8px 30px 8px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+            padding: 9px 30px 9px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
             font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; color: var(--color-ink);
-            background: var(--color-surface); outline: none; cursor: pointer; appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%23647065' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
+            background: var(--color-surface); outline: none; cursor: pointer; appearance: none; width: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%2355637A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 11px center;
         }
         .top-card-head select:focus { border-color: var(--color-primary); }
-        .top-item { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--color-border); }
+        .top-item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--color-border); }
         .top-item:last-child { border-bottom: none; }
         .top-rank {
-            width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-tint);
-            color: var(--color-ink-soft); font-weight: 700; font-size: 0.85rem;
+            width: 28px; height: 28px; border-radius: 50%; background: var(--color-neutral-tint);
+            color: var(--color-ink-soft); font-weight: 700; font-size: 0.82rem;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .top-rank.gold { background: var(--color-accent-tint); color: var(--color-accent); }
+        .top-rank.gold { background: var(--color-accent-tint); color: var(--color-accent-dark); }
         .top-info { flex: 1; min-width: 0; }
-        .top-name { font-weight: 600; font-size: 0.9rem; }
-        .top-id { font-size: 0.76rem; color: var(--color-ink-soft); font-family: var(--font-mono); }
-        .top-count { font-weight: 700; font-size: 1.05rem; color: var(--color-primary); text-align: right; }
-        .top-count-label { font-size: 0.7rem; color: var(--color-ink-faint); text-align: right; }
+        .top-name { font-weight: 600; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .top-id { font-size: 0.74rem; color: var(--color-ink-soft); font-family: var(--font-mono); }
+        .top-count { font-weight: 700; font-size: 1rem; color: var(--color-primary); text-align: right; }
+        .top-count-label { font-size: 0.68rem; color: var(--color-ink-faint); text-align: right; }
         .top-empty { text-align: center; padding: 30px; color: var(--color-ink-faint); font-size: 0.86rem; }
 
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(20,28,22,0.5); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
+        /* ---------- Modal ---------- */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,39,63,0.5); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
         .modal-overlay.active { display: flex; }
-        .modal-box { background: var(--color-surface); border-radius: var(--radius-lg); width: 100%; max-width: 480px; box-shadow: 0 24px 60px -16px rgba(20,28,22,0.35); overflow: hidden; }
+        .modal-box { background: var(--color-surface); border-radius: var(--radius-lg); width: 100%; max-width: 480px; box-shadow: 0 24px 60px -16px rgba(19,39,63,0.35); overflow: hidden; }
         .modal-head { background: var(--color-ink); border-bottom: 2px solid var(--color-accent); color: #fff; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; }
         .modal-head-title { display: flex; align-items: center; gap: 9px; font-size: 0.98rem; font-weight: 600; }
         .modal-head-title svg { width: 17px; height: 17px; color: var(--color-accent); }
@@ -223,6 +244,16 @@
         .stat-mini { background: var(--color-primary-tint); border-radius: 8px; padding: 10px 8px; text-align: center; }
         .stat-mini-num { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-primary-dark); }
         .stat-mini-label { font-size: 0.66rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+
+        /* ---------- Responsif tambahan ---------- */
+        @media(max-width:480px) {
+            .container { padding: 20px 14px 44px; }
+            .navbar { padding: 0 16px; }
+            .navbar-username { display: none; }
+            .btn-logout span.btn-logout-text { display: none; }
+            .btn-logout { padding: 8px; }
+            .page-header h1 { font-size: 1.35rem; }
+        }
     </style>
 </head>
 <body>
@@ -238,11 +269,11 @@
     <div class="navbar-right">
         <div class="navbar-user">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            {{ session('admin')->username }}
+            <span class="navbar-username">{{ session('admin')->username }}</span>
         </div>
         <a href="{{ route('admin.logout') }}" class="btn-logout">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Keluar
+            <span class="btn-logout-text">Keluar</span>
         </a>
     </div>
 </nav>
@@ -250,8 +281,11 @@
 <div class="container">
 
     <div class="page-header">
-        <h1>Dashboard</h1>
-        <p>Data kunjungan perpustakaan desa</p>
+        <div>
+            <h1>Dashboard</h1>
+            <p>Data kunjungan perpustakaan desa</p>
+        </div>
+        <div class="page-header-date">{{ now()->translatedFormat('l, d F Y') }}</div>
     </div>
 
     <!-- Statistik -->
@@ -282,203 +316,215 @@
         </div>
     </div>
 
-    <!-- Filter Panel -->
-    <div class="filter-panel">
-        <div class="filter-panel-head">
-            <div class="eyebrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Filter Data
-            </div>
-            <a href="{{ route('admin.dashboard') }}" class="link-reset">Hapus semua filter</a>
-        </div>
-        <form method="GET" action="{{ route('admin.dashboard') }}" id="filterForm">
-            <input type="hidden" name="filter" value="{{ $filter }}">
-            <input type="hidden" name="peringkat" value="{{ $peringkat }}">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label>Bulan</label>
-                    <select name="bulan">
-                        <option value="">Semua Bulan</option>
-                        @foreach(['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'] as $val=>$label)
-                            <option value="{{ $val }}" {{ $bulan == $val ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Tahun</label>
-                    <select name="tahun">
-                        @for($y = date('Y'); $y >= 2024; $y--)
-                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>RW</label>
-                    <select name="rw">
-                        <option value="">Semua RW</option>
-                        @for($i = 1; $i <= 10; $i++)
-                            @php $val = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                            <option value="{{ $val }}" {{ $rw == $val ? 'selected' : '' }}>RW {{ $val }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>RT</label>
-                    <select name="rt">
-                        <option value="">Semua RT</option>
-                        @for($i = 1; $i <= 10; $i++)
-                            @php $val = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                            <option value="{{ $val }}" {{ $rt == $val ? 'selected' : '' }}>RT {{ $val }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Cari nama / ID</label>
-                    <div class="search-wrap">
+    <!-- Layout dua kolom: konten utama + sidebar -->
+    <div class="dashboard-grid">
+
+        <!-- Kolom utama -->
+        <div class="main-col">
+
+            <!-- Filter Panel -->
+            <div class="filter-panel">
+                <div class="filter-panel-head">
+                    <div class="eyebrow">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" name="search" id="search-input" value="{{ $search }}" placeholder="Contoh: muhammad0001">
+                        Filter Data
+                    </div>
+                    <a href="{{ route('admin.dashboard') }}" class="link-reset">Hapus semua filter</a>
+                </div>
+                <form method="GET" action="{{ route('admin.dashboard') }}" id="filterForm">
+                    <input type="hidden" name="filter" value="{{ $filter }}">
+                    <input type="hidden" name="peringkat" value="{{ $peringkat }}">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Bulan</label>
+                            <select name="bulan">
+                                <option value="">Semua Bulan</option>
+                                @foreach(['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'] as $val=>$label)
+                                    <option value="{{ $val }}" {{ $bulan == $val ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Tahun</label>
+                            <select name="tahun">
+                                @for($y = date('Y'); $y >= 2024; $y--)
+                                    <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>RW</label>
+                            <select name="rw">
+                                <option value="">Semua RW</option>
+                                @for($i = 1; $i <= 10; $i++)
+                                    @php $val = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
+                                    <option value="{{ $val }}" {{ $rw == $val ? 'selected' : '' }}>RW {{ $val }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>RT</label>
+                            <select name="rt">
+                                <option value="">Semua RT</option>
+                                @for($i = 1; $i <= 10; $i++)
+                                    @php $val = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
+                                    <option value="{{ $val }}" {{ $rt == $val ? 'selected' : '' }}>RT {{ $val }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Cari nama / ID</label>
+                            <div class="search-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" name="search" id="search-input" value="{{ $search }}" placeholder="Contoh: muhammad0001">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="filter-hint">Filter otomatis diterapkan begitu kamu ganti pilihan atau berhenti mengetik.</div>
+            </div>
+
+            <!-- Pills aktivitas -->
+            @php
+                $filterOptions = [
+                    'semua'            => ['label' => 'Semua Kunjungan', 'icon' => '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'],
+                    'baca_buku'        => ['label' => 'Baca Buku', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'],
+                    'pinjam_buku'      => ['label' => 'Pinjam Buku', 'icon' => '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>'],
+                    'belajar_komputer' => ['label' => 'Belajar Komputer', 'icon' => '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
+                ];
+            @endphp
+            <div class="pills">
+                @foreach($filterOptions as $key => $opt)
+                    <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['filter' => $key])) }}"
+                       class="pill {{ $filter === $key ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">{!! $opt['icon'] !!}</svg>
+                        {{ $opt['label'] }}
+                    </a>
+                @endforeach
+            </div>
+
+            <!-- Tabel -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-header-title">Data Kunjungan</div>
+                    <div class="table-header-count">{{ $visits->total() }} data ditemukan</div>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Waktu</th>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>RW/RT</th>
+                                <th>Baca Buku</th>
+                                <th>Pinjam Buku</th>
+                                <th>Belajar Komputer</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($visits as $i => $visit)
+                            <tr>
+                                <td>{{ $visits->firstItem() + $i }}</td>
+                                <td><span class="time-text">{{ $visit->visited_at->format('d/m/Y H:i') }}</span></td>
+                                <td><span class="visitor-id">{{ $visit->visitor->visitor_id ?? '-' }}</span></td>
+                                <td><span class="visitor-name">{{ $visit->visitor->name ?? '-' }}</span></td>
+                                <td><span class="time-text">RW{{ $visit->visitor->rw ?? '-' }}/RT{{ $visit->visitor->rt ?? '-' }}</span></td>
+                                <td><span class="status-dot {{ $visit->baca_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->baca_buku ? 'Ya' : 'Tidak' }}</span></td>
+                                <td><span class="status-dot {{ $visit->pinjam_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->pinjam_buku ? 'Ya' : 'Tidak' }}</span></td>
+                                <td><span class="status-dot {{ $visit->belajar_komputer ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->belajar_komputer ? 'Ya' : 'Tidak' }}</span></td>
+                                <td>
+                                    @if($visit->visitor)
+                                    <button class="btn-detail" onclick="showDetail({{ $visit->visitor->id }})">Lihat Detail</button>
+                                    @else
+                                    <span style="color:var(--color-ink-faint);font-size:0.8rem">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="9">
+                                    <div class="empty-msg">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                                        <p>Belum ada data kunjungan.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($visits->hasPages())
+                <div class="pagination">
+                    @if(!$visits->onFirstPage())
+                        <a href="{{ $visits->previousPageUrl() }}" class="page-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</a>
+                    @else
+                        <span class="page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</span>
+                    @endif
+                    <span class="page-info">Halaman {{ $visits->currentPage() }} dari {{ $visits->lastPage() }}</span>
+                    @if($visits->hasMorePages())
+                        <a href="{{ $visits->nextPageUrl() }}" class="page-btn">Berikutnya<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+                    @else
+                        <span class="page-btn disabled">Berikutnya<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+                    @endif
+                </div>
+                @endif
+            </div>
+
+        </div>
+
+        <!-- Sidebar: Top Pengunjung -->
+        <aside class="side-col">
+            <div class="top-card">
+                <div class="top-card-head">
+                    <div class="eyebrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                        Pengunjung Terbanyak
+                    </div>
+                    <select id="peringkat-select" onchange="gantiPeringkat(this.value)">
+                        <option value="kunjungan" {{ $peringkat === 'kunjungan' ? 'selected' : '' }}>Kunjungan terbanyak</option>
+                        <option value="baca_buku" {{ $peringkat === 'baca_buku' ? 'selected' : '' }}>Paling sering baca buku</option>
+                        <option value="pinjam_buku" {{ $peringkat === 'pinjam_buku' ? 'selected' : '' }}>Paling sering pinjam buku</option>
+                        <option value="belajar_komputer" {{ $peringkat === 'belajar_komputer' ? 'selected' : '' }}>Paling sering belajar komputer</option>
+                    </select>
+                </div>
+
+                @php
+                    $countKey = match($peringkat) {
+                        'baca_buku' => 'baca_buku_count',
+                        'pinjam_buku' => 'pinjam_buku_count',
+                        'belajar_komputer' => 'belajar_komputer_count',
+                        default => 'visits_count',
+                    };
+                    $countLabel = match($peringkat) {
+                        'baca_buku' => 'kali baca',
+                        'pinjam_buku' => 'kali pinjam',
+                        'belajar_komputer' => 'kali belajar',
+                        default => 'kunjungan',
+                    };
+                @endphp
+
+                @forelse($topVisitors as $idx => $top)
+                <div class="top-item">
+                    <div class="top-rank {{ $idx === 0 ? 'gold' : '' }}">{{ $idx + 1 }}</div>
+                    <div class="top-info">
+                        <div class="top-name">{{ $top->name }}</div>
+                        <div class="top-id">{{ $top->visitor_id }} &middot; RW{{ $top->rw }}/RT{{ $top->rt }}</div>
+                    </div>
+                    <div>
+                        <div class="top-count">{{ $top->{$countKey} }}</div>
+                        <div class="top-count-label">{{ $countLabel }}</div>
                     </div>
                 </div>
-            </div>
-        </form>
-        <div class="filter-hint">Filter otomatis diterapkan begitu kamu ganti pilihan atau berhenti mengetik.</div>
-    </div>
-
-    <!-- Pills aktivitas -->
-    @php
-        $filterOptions = [
-            'semua'            => ['label' => 'Semua Kunjungan', 'icon' => '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'],
-            'baca_buku'        => ['label' => 'Baca Buku', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'],
-            'pinjam_buku'      => ['label' => 'Pinjam Buku', 'icon' => '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>'],
-            'belajar_komputer' => ['label' => 'Belajar Komputer', 'icon' => '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
-        ];
-    @endphp
-    <div class="pills">
-        @foreach($filterOptions as $key => $opt)
-            <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['filter' => $key])) }}"
-               class="pill {{ $filter === $key ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">{!! $opt['icon'] !!}</svg>
-                {{ $opt['label'] }}
-            </a>
-        @endforeach
-    </div>
-
-    <!-- Tabel -->
-    <div class="table-card">
-        <div class="table-header">
-            <div class="table-header-title">Data Kunjungan</div>
-            <div class="table-header-count">{{ $visits->total() }} data ditemukan</div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Waktu</th>
-                    <th>ID</th>
-                    <th>Nama</th>
-                    <th>RW/RT</th>
-                    <th>Baca Buku</th>
-                    <th>Pinjam Buku</th>
-                    <th>Belajar Komputer</th>
-                    <th>Detail</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($visits as $i => $visit)
-                <tr>
-                    <td>{{ $visits->firstItem() + $i }}</td>
-                    <td><span class="time-text">{{ $visit->visited_at->format('d/m/Y H:i') }}</span></td>
-                    <td><span class="visitor-id">{{ $visit->visitor->visitor_id ?? '-' }}</span></td>
-                    <td><span class="visitor-name">{{ $visit->visitor->name ?? '-' }}</span></td>
-                    <td><span class="time-text">RW{{ $visit->visitor->rw ?? '-' }}/RT{{ $visit->visitor->rt ?? '-' }}</span></td>
-                    <td><span class="status-dot {{ $visit->baca_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->baca_buku ? 'Ya' : 'Tidak' }}</span></td>
-                    <td><span class="status-dot {{ $visit->pinjam_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->pinjam_buku ? 'Ya' : 'Tidak' }}</span></td>
-                    <td><span class="status-dot {{ $visit->belajar_komputer ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->belajar_komputer ? 'Ya' : 'Tidak' }}</span></td>
-                    <td>
-                        @if($visit->visitor)
-                        <button class="btn-detail" onclick="showDetail({{ $visit->visitor->id }})">Lihat Detail</button>
-                        @else
-                        <span style="color:var(--color-ink-faint);font-size:0.8rem">-</span>
-                        @endif
-                    </td>
-                </tr>
                 @empty
-                <tr>
-                    <td colspan="9">
-                        <div class="empty-msg">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-                            <p>Belum ada data kunjungan.</p>
-                        </div>
-                    </td>
-                </tr>
+                <div class="top-empty">Belum ada data untuk kategori ini.</div>
                 @endforelse
-            </tbody>
-        </table>
-
-        @if($visits->hasPages())
-        <div class="pagination">
-            @if(!$visits->onFirstPage())
-                <a href="{{ $visits->previousPageUrl() }}" class="page-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</a>
-            @else
-                <span class="page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</span>
-            @endif
-            <span class="page-info">Halaman {{ $visits->currentPage() }} dari {{ $visits->lastPage() }}</span>
-            @if($visits->hasMorePages())
-                <a href="{{ $visits->nextPageUrl() }}" class="page-btn">Berikutnya<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
-            @else
-                <span class="page-btn disabled">Berikutnya<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
-            @endif
-        </div>
-        @endif
-    </div>
-
-    <!-- Top Pengunjung -->
-    <div class="top-section">
-        <div class="top-card">
-            <div class="top-card-head">
-                <div class="eyebrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-                    Pengunjung Terbanyak
-                </div>
-                <select id="peringkat-select" onchange="gantiPeringkat(this.value)">
-                    <option value="kunjungan" {{ $peringkat === 'kunjungan' ? 'selected' : '' }}>Kunjungan terbanyak</option>
-                    <option value="baca_buku" {{ $peringkat === 'baca_buku' ? 'selected' : '' }}>Paling sering baca buku</option>
-                    <option value="pinjam_buku" {{ $peringkat === 'pinjam_buku' ? 'selected' : '' }}>Paling sering pinjam buku</option>
-                    <option value="belajar_komputer" {{ $peringkat === 'belajar_komputer' ? 'selected' : '' }}>Paling sering belajar komputer</option>
-                </select>
             </div>
+        </aside>
 
-            @php
-                $countKey = match($peringkat) {
-                    'baca_buku' => 'baca_buku_count',
-                    'pinjam_buku' => 'pinjam_buku_count',
-                    'belajar_komputer' => 'belajar_komputer_count',
-                    default => 'visits_count',
-                };
-                $countLabel = match($peringkat) {
-                    'baca_buku' => 'kali baca',
-                    'pinjam_buku' => 'kali pinjam',
-                    'belajar_komputer' => 'kali belajar',
-                    default => 'kunjungan',
-                };
-            @endphp
-
-            @forelse($topVisitors as $idx => $top)
-            <div class="top-item">
-                <div class="top-rank {{ $idx === 0 ? 'gold' : '' }}">{{ $idx + 1 }}</div>
-                <div class="top-info">
-                    <div class="top-name">{{ $top->name }}</div>
-                    <div class="top-id">{{ $top->visitor_id }} &middot; RW{{ $top->rw }}/RT{{ $top->rt }}</div>
-                </div>
-                <div>
-                    <div class="top-count">{{ $top->{$countKey} }}</div>
-                    <div class="top-count-label">{{ $countLabel }}</div>
-                </div>
-            </div>
-            @empty
-            <div class="top-empty">Belum ada data untuk kategori ini.</div>
-            @endforelse
-        </div>
     </div>
 
 </div>
