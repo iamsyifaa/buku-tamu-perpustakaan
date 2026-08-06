@@ -40,12 +40,15 @@ class AdminController extends Controller
     {
         if (!session('admin')) return redirect()->route('admin.login');
 
-        $filter = $request->get('filter', 'semua');
-        $search = $request->get('search', '');
-        $bulan  = $request->get('bulan', '');
-        $tahun  = $request->get('tahun', date('Y'));
-        $rw     = $request->get('rw', '');
-        $rt     = $request->get('rt', '');
+        $filter    = $request->get('filter', 'semua');
+        $search    = $request->get('search', '');
+        $bulan     = $request->get('bulan', '');
+        $tahun     = $request->get('tahun', date('Y'));
+        $rw        = $request->get('rw', '');
+        $rt        = $request->get('rt', '');
+        // Dasar pengurutan leaderboard "Pengunjung Terbanyak":
+        // kunjungan, baca_buku, pinjam_buku, atau belajar_komputer
+        $peringkat = $request->get('peringkat', 'kunjungan');
 
         $query = Visit::with('visitor')->orderBy('visited_at', 'desc');
 
@@ -80,11 +83,34 @@ class AdminController extends Controller
             'hari_ini'         => Visit::whereDate('visited_at', today())->count(),
         ];
 
-        // Top pengunjung bulan ini atau semua waktu
-        $topQuery = Visitor::withCount('visits')->orderBy('visits_count', 'desc')->limit(5);
-        $topVisitors = $topQuery->get();
+        // Kolom hitungan yang dipakai buat mengurutkan leaderboard,
+        // sesuai kategori yang dipilih admin.
+        $kolomPeringkat = match ($peringkat) {
+            'baca_buku'        => 'baca_buku_count',
+            'pinjam_buku'      => 'pinjam_buku_count',
+            'belajar_komputer' => 'belajar_komputer_count',
+            default            => 'visits_count',
+        };
 
-        return view('admin.dashboard', compact('visits', 'stats', 'filter', 'search', 'bulan', 'tahun', 'rw', 'rt', 'topVisitors'));
+        // Hitung semua kategori sekaligus (biar view bisa nampilin angka
+        // yang relevan tanpa query lagi). Urutan & filter "> 0" dikerjakan
+        // di PHP (bukan HAVING di SQL), karena Postgres tidak mengizinkan
+        // alias kolom SELECT dipakai langsung di HAVING seperti MySQL.
+        $topVisitors = Visitor::withCount([
+                'visits',
+                'visits as baca_buku_count' => fn ($q) => $q->where('baca_buku', true),
+                'visits as pinjam_buku_count' => fn ($q) => $q->where('pinjam_buku', true),
+                'visits as belajar_komputer_count' => fn ($q) => $q->where('belajar_komputer', true),
+            ])
+            ->get()
+            ->filter(fn ($v) => $v->{$kolomPeringkat} > 0)
+            ->sortByDesc($kolomPeringkat)
+            ->take(10)
+            ->values();
+
+        return view('admin.dashboard', compact(
+            'visits', 'stats', 'filter', 'search', 'bulan', 'tahun', 'rw', 'rt', 'topVisitors', 'peringkat'
+        ));
     }
 
     public function detailVisitor($id)

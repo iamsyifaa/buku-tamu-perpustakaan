@@ -3,215 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard Admin - Perpustakaan Desa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-bg: #F4F6F1;
+            --color-surface: #FFFFFF;
+            --color-ink: #1E2A22;
+            --color-ink-soft: #647065;
+            --color-ink-faint: #97A196;
+            --color-primary: #1F5F3A;
+            --color-primary-dark: #163F27;
+            --color-primary-tint: #E7F0E9;
+            --color-accent: #A8823A;
+            --color-accent-tint: #F6EEDD;
+            --color-neutral-tint: #EEF0EB;
+            --color-border: #DFE5DA;
+            --color-danger: #AB4A34;
+            --color-danger-tint: #F8EAE6;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; min-height: 100vh; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-ink); min-height: 100vh; }
+        svg.icon { width: 18px; height: 18px; flex-shrink: 0; }
 
         /* Navbar */
         .navbar {
-            background: linear-gradient(135deg, #1a5c2e, #2c7a3f);
+            background: var(--color-ink); border-bottom: 2px solid var(--color-accent);
             color: #fff; padding: 0 28px;
             display: flex; align-items: center; justify-content: space-between;
-            height: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            height: 64px;
         }
-        .navbar-brand { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 700; }
-        .navbar-brand span { font-size: 1.4rem; }
-        .navbar-right { display: flex; align-items: center; gap: 12px; }
-        .navbar-user { font-size: 0.85rem; opacity: 0.85; }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; }
+        .navbar-brand svg { width: 22px; height: 22px; color: var(--color-accent); }
+        .navbar-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .navbar-brand-text b { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+        .navbar-brand-text span { font-size: 0.7rem; color: rgba(255,255,255,0.55); letter-spacing: 0.05em; text-transform: uppercase; }
+        .navbar-right { display: flex; align-items: center; gap: 16px; }
+        .navbar-user { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; color: rgba(255,255,255,0.85); }
+        .navbar-user svg { width: 15px; height: 15px; color: rgba(255,255,255,0.6); }
         .btn-logout {
-            color: #fff; text-decoration: none; font-size: 0.82rem;
-            background: rgba(255,255,255,0.15); padding: 7px 16px;
-            border-radius: 20px; border: 1px solid rgba(255,255,255,0.3);
-            transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+            color: #fff; text-decoration: none; font-size: 0.82rem; font-weight: 600;
+            background: rgba(255,255,255,0.08); padding: 7px 14px;
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.18);
+            transition: background 0.15s;
         }
-        .btn-logout:hover { background: rgba(255,255,255,0.25); }
+        .btn-logout svg { width: 14px; height: 14px; }
+        .btn-logout:hover { background: rgba(255,255,255,0.16); }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+        .container { max-width: 1240px; margin: 0 auto; padding: 28px 20px 48px; }
 
-        /* Page header */
-        .page-header { margin-bottom: 20px; }
-        .page-header h1 { font-size: 1.25rem; color: #1a3c2e; font-weight: 700; }
-        .page-header p { color: #777; font-size: 0.85rem; margin-top: 2px; }
+        .page-header { margin-bottom: 22px; }
+        .page-header h1 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--color-ink); }
+        .page-header p { color: var(--color-ink-soft); font-size: 0.88rem; margin-top: 3px; }
 
-        /* Stats */
-        .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
-        @media(max-width:900px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+        .eyebrow {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--color-accent); margin-bottom: 14px;
+        }
+        .eyebrow svg { width: 14px; height: 14px; }
+
+        /* Stat cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 22px; }
+        @media(max-width:1000px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media(max-width:560px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         .stat-card {
-            background: #fff; border-radius: 10px; padding: 16px 14px;
-            text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-            border-top: 3px solid #2c7a3f; transition: transform 0.15s;
+            background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+            padding: 16px; display: flex; flex-direction: column; gap: 10px;
         }
-        .stat-card:hover { transform: translateY(-2px); }
-        .stat-card.blue { border-top-color: #3498db; }
-        .stat-card.orange { border-top-color: #e67e22; }
-        .stat-card.purple { border-top-color: #9b59b6; }
-        .stat-card.teal { border-top-color: #1abc9c; }
-        .stat-card.red { border-top-color: #e74c3c; }
-        .stat-num { font-size: 1.9rem; font-weight: 800; color: #2c7a3f; line-height: 1; }
-        .stat-card.blue .stat-num { color: #3498db; }
-        .stat-card.orange .stat-num { color: #e67e22; }
-        .stat-card.purple .stat-num { color: #9b59b6; }
-        .stat-card.teal .stat-num { color: #1abc9c; }
-        .stat-card.red .stat-num { color: #e74c3c; }
-        .stat-label { font-size: 0.75rem; color: #888; margin-top: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .stat-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stat-icon svg { width: 17px; height: 17px; }
+        .stat-icon.primary { background: var(--color-primary-tint); color: var(--color-primary); }
+        .stat-icon.neutral { background: var(--color-neutral-tint); color: var(--color-ink-soft); }
+        .stat-icon.accent  { background: var(--color-accent-tint); color: var(--color-accent); }
+        .stat-num { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; line-height: 1; }
+        .stat-label { font-size: 0.72rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 
         /* Filter panel */
         .filter-panel {
-            background: #fff; border-radius: 10px; padding: 16px 20px;
-            margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+            padding: 18px 20px; margin-bottom: 16px;
         }
-        .filter-panel-title { font-size: 0.78rem; font-weight: 700; color: #2c7a3f; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-        .filter-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
-        .filter-group { display: flex; flex-direction: column; gap: 4px; }
-        .filter-group label { font-size: 0.75rem; color: #666; font-weight: 600; }
+        .filter-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .filter-panel-head .eyebrow { margin-bottom: 0; }
+        .link-reset { font-size: 0.8rem; color: var(--color-ink-soft); text-decoration: none; }
+        .link-reset:hover { color: var(--color-danger); }
+        .filter-row { display: grid; grid-template-columns: repeat(4, 1fr) 1.6fr; gap: 12px; align-items: end; }
+        @media(max-width:900px) { .filter-row { grid-template-columns: repeat(2, 1fr); } }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 0.74rem; color: var(--color-ink-soft); font-weight: 600; }
         .filter-group select, .filter-group input {
-            padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px;
-            font-size: 0.85rem; outline: none; background: #fff; min-width: 110px;
+            padding: 9px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+            font-family: var(--font-body); font-size: 0.87rem; outline: none; background: var(--color-surface); color: var(--color-ink);
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .filter-group select:focus, .filter-group input:focus { border-color: #2c7a3f; }
-        .filter-group input { min-width: 180px; }
-        .btn-filter {
-            padding: 7px 18px; background: #2c7a3f; color: #fff;
-            border: none; border-radius: 6px; font-size: 0.85rem;
-            cursor: pointer; font-weight: 600; align-self: flex-end;
+        .filter-group select { appearance: none; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%23647065' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px;
         }
-        .btn-filter:hover { background: #235f31; }
-        .btn-reset {
-            padding: 7px 14px; background: #fff; color: #666;
-            border: 1px solid #ddd; border-radius: 6px; font-size: 0.85rem;
-            cursor: pointer; text-decoration: none; align-self: flex-end;
-        }
-        .btn-reset:hover { border-color: #999; color: #333; }
+        .filter-group select:focus, .filter-group input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-tint); }
+        .search-wrap { position: relative; }
+        .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--color-ink-faint); }
+        .search-wrap input { padding-left: 32px; width: 100%; }
+        .filter-hint { font-size: 0.74rem; color: var(--color-ink-faint); margin-top: 10px; }
 
-        /* Aktivitas filter pills */
-        .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        /* Pills aktivitas */
+        .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
         .pill {
-            padding: 7px 18px; border-radius: 20px; border: 2px solid #ddd;
-            background: #fff; font-size: 0.85rem; cursor: pointer;
-            text-decoration: none; color: #555; font-weight: 500; transition: all 0.2s;
-            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--color-border);
+            background: var(--color-surface); font-size: 0.84rem; cursor: pointer;
+            text-decoration: none; color: var(--color-ink-soft); font-weight: 600; transition: all 0.15s;
+            display: flex; align-items: center; gap: 7px;
         }
-        .pill:hover { border-color: #2c7a3f; color: #2c7a3f; }
-        .pill.active { background: #2c7a3f; color: #fff; border-color: #2c7a3f; }
+        .pill svg { width: 15px; height: 15px; }
+        .pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
+        .pill.active { background: var(--color-ink); color: #fff; border-color: var(--color-ink); }
+        .pill.active svg { color: var(--color-accent); }
 
         /* Table */
-        .table-card {
-            background: #fff; border-radius: 10px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden;
-        }
-        .table-header {
-            padding: 14px 20px; border-bottom: 1px solid #f0f0f0;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .table-header-title { font-size: 0.9rem; font-weight: 700; color: #333; }
-        .table-header-count { font-size: 0.8rem; color: #888; }
+        .table-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+        .table-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+        .table-header-title { font-family: var(--font-display); font-size: 1rem; font-weight: 600; }
+        .table-header-count { font-size: 0.8rem; color: var(--color-ink-soft); }
         table { width: 100%; border-collapse: collapse; }
-        thead { background: #f8fdf9; }
-        th {
-            padding: 11px 14px; text-align: left; font-size: 0.78rem;
-            font-weight: 700; color: #2c7a3f; text-transform: uppercase;
-            letter-spacing: 0.4px; border-bottom: 2px solid #e8f5ec;
-        }
-        td { padding: 12px 14px; font-size: 0.85rem; color: #444; border-bottom: 1px solid #f5f5f5; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafffe; }
-        .visitor-id { font-weight: 700; color: #2c7a3f; font-family: monospace; font-size: 0.88rem; }
-        .visitor-name { font-weight: 600; color: #222; }
-        .time-text { color: #888; font-size: 0.82rem; }
-        .badge {
-            display: inline-flex; align-items: center; gap: 3px;
-            padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
-        }
-        .badge-yes { background: #e8f5ec; color: #1a6e30; }
-        .badge-no  { background: #f5f5f5; color: #bbb; }
+        thead { background: var(--color-primary-tint); }
+        th { padding: 11px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--color-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 13px 16px; font-size: 0.86rem; color: var(--color-ink); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #FAFBF8; }
+        .visitor-id { font-weight: 600; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.82rem; }
+        .visitor-name { font-weight: 600; }
+        .time-text { color: var(--color-ink-soft); font-size: 0.82rem; }
+        .status-dot { display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; }
+        .status-dot .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-ink-faint); }
+        .status-dot.yes .dot { background: var(--color-primary); }
+        .status-dot.yes { color: var(--color-ink); font-weight: 500; }
+        .status-dot.no { color: var(--color-ink-faint); }
         .btn-detail {
-            padding: 5px 14px; background: #eef7f0; color: #2c7a3f;
-            border: 1px solid #c3e6cb; border-radius: 6px; font-size: 0.78rem;
-            cursor: pointer; font-weight: 600; transition: all 0.2s; white-space: nowrap;
+            padding: 6px 14px; background: transparent; color: var(--color-primary);
+            border: 1.5px solid var(--color-primary); border-radius: var(--radius-md); font-size: 0.78rem;
+            cursor: pointer; font-weight: 600; transition: all 0.15s; white-space: nowrap;
         }
-        .btn-detail:hover { background: #2c7a3f; color: #fff; }
-        .empty-msg { text-align: center; padding: 48px; color: #bbb; font-size: 0.9rem; }
-        .empty-msg .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .btn-detail:hover { background: var(--color-primary); color: #fff; }
+        .empty-msg { text-align: center; padding: 56px 20px; color: var(--color-ink-faint); }
+        .empty-msg svg { width: 36px; height: 36px; margin-bottom: 10px; color: var(--color-ink-faint); }
+        .empty-msg p { font-size: 0.9rem; }
 
         /* Pagination */
-        .pagination { padding: 14px 20px; display: flex; justify-content: flex-end; gap: 5px; border-top: 1px solid #f0f0f0; }
+        .pagination { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); }
+        .page-info { font-size: 0.82rem; color: var(--color-ink-soft); }
         .page-btn {
-            padding: 6px 12px; border-radius: 6px; border: 1px solid #e0e0e0;
-            background: #fff; font-size: 0.82rem; text-decoration: none; color: #555;
-            transition: all 0.15s;
+            padding: 7px 14px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border);
+            background: var(--color-surface); font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--color-ink);
+            transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px;
         }
-        .page-btn:hover { border-color: #2c7a3f; color: #2c7a3f; }
-        .page-btn.active { background: #2c7a3f; color: #fff; border-color: #2c7a3f; font-weight: 700; }
+        .page-btn svg { width: 14px; height: 14px; }
+        .page-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+        .page-btn.disabled { opacity: 0.4; pointer-events: none; }
 
         /* Top Visitors */
-        .top-section { margin-top: 20px; }
-        .top-card { background: #fff; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-        .top-card-title { font-size: 0.9rem; font-weight: 700; color: #333; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-        .top-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 0; border-bottom: 1px solid #f5f5f5;
+        .top-section { margin-top: 22px; }
+        .top-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px 20px; }
+        .top-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+        .top-card-head .eyebrow { margin-bottom: 0; }
+        .top-card-head select {
+            padding: 8px 30px 8px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+            font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; color: var(--color-ink);
+            background: var(--color-surface); outline: none; cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%23647065' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 11px center;
         }
+        .top-card-head select:focus { border-color: var(--color-primary); }
+        .top-item { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--color-border); }
         .top-item:last-child { border-bottom: none; }
         .top-rank {
-            width: 28px; height: 28px; border-radius: 50%; background: #e8f5ec;
-            color: #2c7a3f; font-weight: 800; font-size: 0.85rem;
+            width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-tint);
+            color: var(--color-ink-soft); font-weight: 700; font-size: 0.85rem;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .top-rank.gold { background: #fff3cd; color: #856404; }
-        .top-rank.silver { background: #e2e3e5; color: #555; }
-        .top-rank.bronze { background: #fde8d8; color: #8b4513; }
-        .top-info { flex: 1; }
-        .top-name { font-weight: 600; font-size: 0.88rem; color: #222; }
-        .top-id { font-size: 0.75rem; color: #999; font-family: monospace; }
-        .top-count { font-weight: 800; font-size: 1rem; color: #2c7a3f; }
-        .top-count-label { font-size: 0.72rem; color: #aaa; }
+        .top-rank.gold { background: var(--color-accent-tint); color: var(--color-accent); }
+        .top-info { flex: 1; min-width: 0; }
+        .top-name { font-weight: 600; font-size: 0.9rem; }
+        .top-id { font-size: 0.76rem; color: var(--color-ink-soft); font-family: var(--font-mono); }
+        .top-count { font-weight: 700; font-size: 1.05rem; color: var(--color-primary); text-align: right; }
+        .top-count-label { font-size: 0.7rem; color: var(--color-ink-faint); text-align: right; }
+        .top-empty { text-align: center; padding: 30px; color: var(--color-ink-faint); font-size: 0.86rem; }
 
         /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; align-items: center; justify-content: center; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(20,28,22,0.5); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
         .modal-overlay.active { display: flex; }
-        .modal-box {
-            background: #fff; border-radius: 12px; width: 90%; max-width: 480px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18); overflow: hidden;
-        }
-        .modal-head {
-            background: linear-gradient(135deg, #1a5c2e, #2c7a3f);
-            color: #fff; padding: 18px 22px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-head-title { font-size: 1rem; font-weight: 700; }
-        .modal-close {
-            background: rgba(255,255,255,0.15); border: none; color: #fff;
-            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-            font-size: 1rem; display: flex; align-items: center; justify-content: center;
-        }
-        .modal-close:hover { background: rgba(255,255,255,0.3); }
-        .modal-body { padding: 20px 22px; }
-        .modal-id-badge {
-            background: #f0f9f3; border: 1px solid #c3e6cb; border-radius: 8px;
-            padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-        }
-        .modal-id-text { font-family: monospace; font-size: 1.1rem; font-weight: 800; color: #2c7a3f; }
-        .modal-id-name { font-size: 0.88rem; color: #555; }
+        .modal-box { background: var(--color-surface); border-radius: var(--radius-lg); width: 100%; max-width: 480px; box-shadow: 0 24px 60px -16px rgba(20,28,22,0.35); overflow: hidden; }
+        .modal-head { background: var(--color-ink); border-bottom: 2px solid var(--color-accent); color: #fff; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-head-title { display: flex; align-items: center; gap: 9px; font-size: 0.98rem; font-weight: 600; }
+        .modal-head-title svg { width: 17px; height: 17px; color: var(--color-accent); }
+        .modal-close { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-close svg { width: 14px; height: 14px; }
+        .modal-close:hover { background: rgba(255,255,255,0.2); }
+        .modal-body { padding: 22px; }
+        .modal-id-badge { background: var(--color-primary-tint); border: 1px dashed var(--color-primary); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; }
+        .modal-id-text { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: var(--color-primary-dark); letter-spacing: 0.03em; }
+        .modal-id-name { font-size: 0.86rem; color: var(--color-ink-soft); margin-top: 2px; }
         .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .detail-item { background: #f8f9fa; border-radius: 7px; padding: 10px 12px; }
-        .detail-item-label { font-size: 0.72rem; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-        .detail-item-value { font-size: 0.92rem; color: #222; font-weight: 600; margin-top: 2px; }
+        .detail-item { background: var(--color-neutral-tint); border-radius: 8px; padding: 10px 12px; }
+        .detail-item-label { font-size: 0.68rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .detail-item-value { font-size: 0.9rem; color: var(--color-ink); font-weight: 600; margin-top: 2px; }
         .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 6px; }
-        .stat-mini { background: #f0f9f3; border-radius: 7px; padding: 10px 8px; text-align: center; }
-        .stat-mini-num { font-size: 1.4rem; font-weight: 800; color: #2c7a3f; }
-        .stat-mini-label { font-size: 0.68rem; color: #888; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+        .stat-mini { background: var(--color-primary-tint); border-radius: 8px; padding: 10px 8px; text-align: center; }
+        .stat-mini-num { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-primary-dark); }
+        .stat-mini-label { font-size: 0.66rem; color: var(--color-ink-soft); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
     <div class="navbar-brand">
-        <span>📚</span> Admin Perpustakaan Desa
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <div class="navbar-brand-text">
+            <b>Perpustakaan Desa</b>
+            <span>Panel Admin</span>
+        </div>
     </div>
     <div class="navbar-right">
-        <span class="navbar-user">👤 {{ session('admin')->username }}</span>
-        <a href="{{ route('admin.logout') }}" class="btn-logout">Keluar</a>
+        <div class="navbar-user">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {{ session('admin')->username }}
+        </div>
+        <a href="{{ route('admin.logout') }}" class="btn-logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Keluar
+        </a>
     </div>
 </nav>
 
@@ -225,36 +257,43 @@
     <!-- Statistik -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-num">{{ $stats['total_kunjungan'] }}</div>
-            <div class="stat-label">Total Kunjungan</div>
+            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div><div class="stat-num">{{ $stats['total_kunjungan'] }}</div><div class="stat-label">Total Kunjungan</div></div>
         </div>
-        <div class="stat-card blue">
-            <div class="stat-num">{{ $stats['total_pengunjung'] }}</div>
-            <div class="stat-label">Terdaftar</div>
+        <div class="stat-card">
+            <div class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div><div class="stat-num">{{ $stats['total_pengunjung'] }}</div><div class="stat-label">Terdaftar</div></div>
         </div>
-        <div class="stat-card orange">
-            <div class="stat-num">{{ $stats['hari_ini'] }}</div>
-            <div class="stat-label">Hari Ini</div>
+        <div class="stat-card">
+            <div class="stat-icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div><div class="stat-num">{{ $stats['hari_ini'] }}</div><div class="stat-label">Hari Ini</div></div>
         </div>
-        <div class="stat-card teal">
-            <div class="stat-num">{{ $stats['baca_buku'] }}</div>
-            <div class="stat-label">Baca Buku</div>
+        <div class="stat-card">
+            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div><div class="stat-num">{{ $stats['baca_buku'] }}</div><div class="stat-label">Baca Buku</div></div>
         </div>
-        <div class="stat-card purple">
-            <div class="stat-num">{{ $stats['pinjam_buku'] }}</div>
-            <div class="stat-label">Pinjam Buku</div>
+        <div class="stat-card">
+            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+            <div><div class="stat-num">{{ $stats['pinjam_buku'] }}</div><div class="stat-label">Pinjam Buku</div></div>
         </div>
-        <div class="stat-card red">
-            <div class="stat-num">{{ $stats['belajar_komputer'] }}</div>
-            <div class="stat-label">Belajar Komputer</div>
+        <div class="stat-card">
+            <div class="stat-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div><div class="stat-num">{{ $stats['belajar_komputer'] }}</div><div class="stat-label">Belajar Komputer</div></div>
         </div>
     </div>
 
     <!-- Filter Panel -->
     <div class="filter-panel">
-        <div class="filter-panel-title">🔍 Filter Data</div>
-        <form method="GET" action="{{ route('admin.dashboard') }}">
+        <div class="filter-panel-head">
+            <div class="eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Filter Data
+            </div>
+            <a href="{{ route('admin.dashboard') }}" class="link-reset">Hapus semua filter</a>
+        </div>
+        <form method="GET" action="{{ route('admin.dashboard') }}" id="filterForm">
             <input type="hidden" name="filter" value="{{ $filter }}">
+            <input type="hidden" name="peringkat" value="{{ $peringkat }}">
             <div class="filter-row">
                 <div class="filter-group">
                     <label>Bulan</label>
@@ -294,29 +333,32 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Cari</label>
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Nama atau ID...">
+                    <label>Cari nama / ID</label>
+                    <div class="search-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" name="search" id="search-input" value="{{ $search }}" placeholder="Contoh: muhammad0001">
+                    </div>
                 </div>
-                <button type="submit" class="btn-filter">Terapkan</button>
-                <a href="{{ route('admin.dashboard') }}" class="btn-reset">Reset</a>
             </div>
         </form>
+        <div class="filter-hint">Filter otomatis diterapkan begitu kamu ganti pilihan atau berhenti mengetik.</div>
     </div>
 
     <!-- Pills aktivitas -->
+    @php
+        $filterOptions = [
+            'semua'            => ['label' => 'Semua Kunjungan', 'icon' => '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'],
+            'baca_buku'        => ['label' => 'Baca Buku', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'],
+            'pinjam_buku'      => ['label' => 'Pinjam Buku', 'icon' => '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>'],
+            'belajar_komputer' => ['label' => 'Belajar Komputer', 'icon' => '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
+        ];
+    @endphp
     <div class="pills">
-        @php
-            $filterOptions = [
-                'semua'            => ['label' => 'Semua Kunjungan', 'icon' => '📋'],
-                'baca_buku'        => ['label' => 'Baca Buku', 'icon' => '📖'],
-                'pinjam_buku'      => ['label' => 'Pinjam Buku', 'icon' => '📚'],
-                'belajar_komputer' => ['label' => 'Belajar Komputer', 'icon' => '💻'],
-            ];
-        @endphp
         @foreach($filterOptions as $key => $opt)
             <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['filter' => $key])) }}"
                class="pill {{ $filter === $key ? 'active' : '' }}">
-                {{ $opt['icon'] }} {{ $opt['label'] }}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">{!! $opt['icon'] !!}</svg>
+                {{ $opt['label'] }}
             </a>
         @endforeach
     </div>
@@ -349,14 +391,14 @@
                     <td><span class="visitor-id">{{ $visit->visitor->visitor_id ?? '-' }}</span></td>
                     <td><span class="visitor-name">{{ $visit->visitor->name ?? '-' }}</span></td>
                     <td><span class="time-text">RW{{ $visit->visitor->rw ?? '-' }}/RT{{ $visit->visitor->rt ?? '-' }}</span></td>
-                    <td><span class="badge {{ $visit->baca_buku ? 'badge-yes' : 'badge-no' }}">{{ $visit->baca_buku ? '✓ Ya' : '— Tidak' }}</span></td>
-                    <td><span class="badge {{ $visit->pinjam_buku ? 'badge-yes' : 'badge-no' }}">{{ $visit->pinjam_buku ? '✓ Ya' : '— Tidak' }}</span></td>
-                    <td><span class="badge {{ $visit->belajar_komputer ? 'badge-yes' : 'badge-no' }}">{{ $visit->belajar_komputer ? '✓ Ya' : '— Tidak' }}</span></td>
+                    <td><span class="status-dot {{ $visit->baca_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->baca_buku ? 'Ya' : 'Tidak' }}</span></td>
+                    <td><span class="status-dot {{ $visit->pinjam_buku ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->pinjam_buku ? 'Ya' : 'Tidak' }}</span></td>
+                    <td><span class="status-dot {{ $visit->belajar_komputer ? 'yes' : 'no' }}"><span class="dot"></span>{{ $visit->belajar_komputer ? 'Ya' : 'Tidak' }}</span></td>
                     <td>
                         @if($visit->visitor)
                         <button class="btn-detail" onclick="showDetail({{ $visit->visitor->id }})">Lihat Detail</button>
                         @else
-                        <span style="color:#ccc;font-size:0.8rem">-</span>
+                        <span style="color:var(--color-ink-faint);font-size:0.8rem">-</span>
                         @endif
                     </td>
                 </tr>
@@ -364,8 +406,8 @@
                 <tr>
                     <td colspan="9">
                         <div class="empty-msg">
-                            <div class="empty-icon">📭</div>
-                            Belum ada data kunjungan.
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                            <p>Belum ada data kunjungan.</p>
                         </div>
                     </td>
                 </tr>
@@ -375,36 +417,69 @@
 
         @if($visits->hasPages())
         <div class="pagination">
-            @foreach($visits->links()->elements[0] as $page => $url)
-                <a href="{{ $url }}" class="page-btn {{ $visits->currentPage() == $page ? 'active' : '' }}">{{ $page }}</a>
-            @endforeach
+            @if(!$visits->onFirstPage())
+                <a href="{{ $visits->previousPageUrl() }}" class="page-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</a>
+            @else
+                <span class="page-btn disabled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya</span>
+            @endif
+            <span class="page-info">Halaman {{ $visits->currentPage() }} dari {{ $visits->lastPage() }}</span>
+            @if($visits->hasMorePages())
+                <a href="{{ $visits->nextPageUrl() }}" class="page-btn">Berikutnya<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+            @else
+                <span class="page-btn disabled">Berikutnya<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            @endif
         </div>
         @endif
     </div>
 
     <!-- Top Pengunjung -->
-    @if($topVisitors->count())
     <div class="top-section">
         <div class="top-card">
-            <div class="top-card-title">🏆 Pengunjung Terbanyak</div>
-            @foreach($topVisitors as $idx => $top)
-            <div class="top-item">
-                <div class="top-rank {{ $idx === 0 ? 'gold' : ($idx === 1 ? 'silver' : ($idx === 2 ? 'bronze' : '')) }}">
-                    {{ $idx + 1 }}
+            <div class="top-card-head">
+                <div class="eyebrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                    Pengunjung Terbanyak
                 </div>
+                <select id="peringkat-select" onchange="gantiPeringkat(this.value)">
+                    <option value="kunjungan" {{ $peringkat === 'kunjungan' ? 'selected' : '' }}>Kunjungan terbanyak</option>
+                    <option value="baca_buku" {{ $peringkat === 'baca_buku' ? 'selected' : '' }}>Paling sering baca buku</option>
+                    <option value="pinjam_buku" {{ $peringkat === 'pinjam_buku' ? 'selected' : '' }}>Paling sering pinjam buku</option>
+                    <option value="belajar_komputer" {{ $peringkat === 'belajar_komputer' ? 'selected' : '' }}>Paling sering belajar komputer</option>
+                </select>
+            </div>
+
+            @php
+                $countKey = match($peringkat) {
+                    'baca_buku' => 'baca_buku_count',
+                    'pinjam_buku' => 'pinjam_buku_count',
+                    'belajar_komputer' => 'belajar_komputer_count',
+                    default => 'visits_count',
+                };
+                $countLabel = match($peringkat) {
+                    'baca_buku' => 'kali baca',
+                    'pinjam_buku' => 'kali pinjam',
+                    'belajar_komputer' => 'kali belajar',
+                    default => 'kunjungan',
+                };
+            @endphp
+
+            @forelse($topVisitors as $idx => $top)
+            <div class="top-item">
+                <div class="top-rank {{ $idx === 0 ? 'gold' : '' }}">{{ $idx + 1 }}</div>
                 <div class="top-info">
                     <div class="top-name">{{ $top->name }}</div>
-                    <div class="top-id">{{ $top->visitor_id }} &bull; RW{{ $top->rw }}/RT{{ $top->rt }}</div>
+                    <div class="top-id">{{ $top->visitor_id }} &middot; RW{{ $top->rw }}/RT{{ $top->rt }}</div>
                 </div>
-                <div style="text-align:right">
-                    <div class="top-count">{{ $top->visits_count }}</div>
-                    <div class="top-count-label">kunjungan</div>
+                <div>
+                    <div class="top-count">{{ $top->{$countKey} }}</div>
+                    <div class="top-count-label">{{ $countLabel }}</div>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="top-empty">Belum ada data untuk kategori ini.</div>
+            @endforelse
         </div>
     </div>
-    @endif
 
 </div>
 
@@ -412,11 +487,14 @@
 <div class="modal-overlay" id="modal-detail">
     <div class="modal-box">
         <div class="modal-head">
-            <div class="modal-head-title">👤 Detail Pengunjung</div>
-            <button class="modal-close" onclick="closeDetail()">✕</button>
+            <div class="modal-head-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Detail Pengunjung
+            </div>
+            <button class="modal-close" onclick="closeDetail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <div class="modal-body" id="modal-content">
-            <div style="text-align:center;padding:24px;color:#aaa;">Memuat data...</div>
+            <div style="text-align:center;padding:24px;color:var(--color-ink-faint);">Memuat data...</div>
         </div>
     </div>
 </div>
@@ -426,7 +504,7 @@ const detailUrl = "{{ url('admin/visitor') }}";
 
 function showDetail(id) {
     document.getElementById('modal-detail').classList.add('active');
-    document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:#aaa;">⏳ Memuat data...</div>';
+    document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:var(--color-ink-faint);">Memuat data...</div>';
 
     fetch(detailUrl + '/' + id)
         .then(r => r.json())
@@ -434,10 +512,8 @@ function showDetail(id) {
             const v = d.visitor;
             document.getElementById('modal-content').innerHTML = `
                 <div class="modal-id-badge">
-                    <div>
-                        <div class="modal-id-text">${v.visitor_id}</div>
-                        <div class="modal-id-name">${v.name}</div>
-                    </div>
+                    <div class="modal-id-text">${v.visitor_id}</div>
+                    <div class="modal-id-name">${v.name}</div>
                 </div>
                 <div class="detail-grid">
                     <div class="detail-item">
@@ -457,7 +533,7 @@ function showDetail(id) {
                         <div class="detail-item-value">${v.alamat ?? '-'}</div>
                     </div>
                 </div>
-                <div style="font-size:0.78rem;font-weight:700;color:#2c7a3f;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">📊 Statistik Kunjungan</div>
+                <div class="eyebrow" style="margin-bottom:8px;">Statistik Kunjungan</div>
                 <div class="stat-row">
                     <div class="stat-mini">
                         <div class="stat-mini-num">${d.total_kunjungan}</div>
@@ -476,11 +552,11 @@ function showDetail(id) {
                         <div class="stat-mini-label">Komputer</div>
                     </div>
                 </div>
-                <div style="margin-top:10px;font-size:0.8rem;color:#aaa;">Kunjungan terakhir: ${d.kunjungan_terakhir}</div>
+                <div style="margin-top:10px;font-size:0.8rem;color:var(--color-ink-faint);">Kunjungan terakhir: ${d.kunjungan_terakhir}</div>
             `;
         })
         .catch(() => {
-            document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:#e74c3c;">Gagal memuat data.</div>';
+            document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:var(--color-danger);">Gagal memuat data.</div>';
         });
 }
 
@@ -491,6 +567,29 @@ function closeDetail() {
 document.getElementById('modal-detail').addEventListener('click', function(e) {
     if (e.target === this) closeDetail();
 });
+
+// Filter otomatis: begitu select berubah, form langsung submit.
+document.querySelectorAll('#filterForm select').forEach(function (el) {
+    el.addEventListener('change', function () {
+        document.getElementById('filterForm').submit();
+    });
+});
+
+// Kolom pencarian: submit otomatis setelah user berhenti mengetik (debounce).
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function () {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
+
+// Ganti kategori leaderboard "Pengunjung Terbanyak" tanpa tombol terapkan.
+function gantiPeringkat(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('peringkat', value);
+    window.location.href = url.toString();
+}
 </script>
 </body>
 </html>
