@@ -41,8 +41,8 @@
             padding: 32px 16px;
             background-color: var(--color-bg);
             background-image:
-                radial-gradient(circle at 1px 1px, var(--color-bg-pattern) 1.5px, transparent 0);
-            background-size: 26px 26px;
+                    radial-gradient(circle at 1px 1px, var(--color-bg-pattern) 1.5px, transparent 0);
+                background-size: 26px 26px;
         }
 
         .card {
@@ -166,7 +166,7 @@
     </style>
     @stack('styles')
 </head>
-<body>
+<body class="@yield('body-class')">
     @yield('content')
 
     @stack('modals')
