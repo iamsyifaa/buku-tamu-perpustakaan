@@ -35,7 +35,7 @@
         padding: 56px 48px;
         background:
             linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
-            url('{{ asset("img/WhatsApp Image 2026-08-05 at 20.17.42.jpeg") }}');
+            url('{{ asset("img/WhatsApp Image 2026-08-05 at 20.17.44.jpeg") }}');
         background-size: cover;
         background-position: center;
         overflow: hidden;
@@ -120,17 +120,17 @@
     .split-form .link-text a { color: var(--brand); font-weight: 700; text-decoration: none; }
     .split-form .link-text a:hover { opacity: 0.8; }
 
-    /* ===== Responsive: stack, photo becomes 3:2 banner, book icon hidden ===== */
+    /* ===== Responsive: stack, photo becomes 16:9 banner, text on top, book icon hidden ===== */
     @media (max-width: 840px) {
         .split-shell { flex-direction: column; }
 
         .split-visual {
             flex: none;
-            aspect-ratio: 3 / 2;
+            aspect-ratio: 16 / 9;
             min-height: unset;
-            padding: 28px 24px;
-            justify-content: flex-end;
-            gap: 10px;
+            padding: 22px 22px;
+            justify-content: flex-start;
+            gap: 8px;
         }
         .visual-icon-wrap { display: none; }
 
@@ -142,9 +142,9 @@
     }
 
     @media (max-width: 560px) {
-        .split-visual { padding: 22px 18px; }
-        .visual-text { font-size: 1.02rem; max-width: 100%; margin-bottom: 8px; }
-        .visual-caption { font-size: 0.82rem; }
+        .split-visual { padding: 18px 16px; }
+        .visual-text { font-size: 1.02rem; max-width: 100%; margin-bottom: 6px; }
+        .visual-caption { font-size: 0.8rem; }
         .split-form-wrap { padding: 32px 18px 40px; }
         .split-form .card-title { font-size: 1.55rem; }
         .split-form .card-subtitle { font-size: 0.9rem; }

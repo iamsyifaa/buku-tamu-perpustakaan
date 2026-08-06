@@ -14,14 +14,20 @@
         --white: #FFFFFF;
     }
 
+    html {
+        min-height: 100%;
+        background: var(--brand);
+    }
+
     body {
         min-height: 100vh;
+        min-height: 100dvh;
         margin: 0;
         padding: 32px 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(180deg, #021726 0%, #052c44 45%, var(--brand) 100%);
+        background: linear-gradient(180deg, #021726 0%, #052c44 55%, var(--brand) 100%);
         font-family: 'Work Sans', sans-serif;
     }
 
@@ -39,6 +45,7 @@
     .stage-blob { position: absolute; border-radius: 50%; filter: blur(60px); pointer-events: none; animation: floatBlob 10s ease-in-out infinite; }
     .stage-blob-1 { width: 260px; height: 260px; background: rgba(233, 212, 195, 0.14); top: -40px; left: -60px; }
     .stage-blob-2 { width: 200px; height: 200px; background: rgba(233, 212, 195, 0.1); bottom: -50px; right: -40px; animation-delay: 3s; }
+    .stage-blob-3 { width: 150px; height: 150px; background: rgba(168, 130, 58, 0.12); top: 30%; right: 8%; animation-delay: 5.5s; }
 
     .card {
         position: relative;
@@ -61,9 +68,32 @@
         color: var(--brand);
         margin-bottom: 12px;
     }
-    .card-title-icon { width: 30px; height: 30px; flex-shrink: 0; }
+    .card-title-icon { width: 30px; height: 30px; flex-shrink: 0; animation: bookFloat 4s ease-in-out infinite; }
+    @keyframes bookFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-4px) rotate(-4deg); }
+    }
 
-    .card-subtitle { color: var(--text-soft); margin-bottom: 18px; line-height: 1.6; }
+    .card-subtitle { color: var(--text-soft); margin-bottom: 6px; line-height: 1.6; }
+
+    .selected-counter {
+        display: inline-block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: var(--brand);
+        background: rgba(19, 39, 63, 0.08);
+        border-radius: 999px;
+        padding: 4px 12px;
+        margin-bottom: 16px;
+        transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), background 0.25s ease;
+    }
+    .selected-counter.bump { animation: counterBump 0.35s ease; }
+    @keyframes counterBump {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.12); background: rgba(19, 39, 63, 0.16); }
+        100% { transform: scale(1); }
+    }
 
     .aktivitas-icon-wrap {
         width: 48px;
@@ -74,9 +104,9 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        transition: background 0.2s ease, transform 0.2s ease;
+        transition: background 0.25s ease, transform 0.25s ease;
     }
-    .aktivitas-icon-wrap svg { width: 24px; height: 24px; stroke: var(--brand); }
+    .aktivitas-icon-wrap svg { width: 24px; height: 24px; stroke: var(--brand); transition: stroke 0.25s ease; }
 
     .aktivitas-card {
         display: flex;
@@ -87,26 +117,36 @@
         border-radius: 14px;
         margin-bottom: 12px;
         cursor: pointer;
-        transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
         user-select: none;
         background: var(--cream-soft);
+        opacity: 0;
+        animation: fadeInUp 0.55s cubic-bezier(.16,1,.3,1) both;
     }
     .aktivitas-card:hover {
         border-color: var(--brand);
         background: rgba(255, 255, 255, 0.5);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 18px -10px rgba(19, 39, 63, 0.35);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px -10px rgba(19, 39, 63, 0.4);
     }
+    .aktivitas-card:hover .aktivitas-icon-wrap { transform: rotate(-6deg) scale(1.05); }
+
     .aktivitas-card.selected {
         border-color: var(--brand);
         background: rgba(19, 39, 63, 0.08);
-        transform: scale(1.01);
+        transform: scale(1.015);
+        box-shadow: 0 8px 18px -12px rgba(19, 39, 63, 0.35);
     }
     .aktivitas-card.selected .aktivitas-icon-wrap {
         background: var(--brand);
-        transform: scale(1.08);
+        animation: iconPop 0.4s cubic-bezier(.34,1.56,.64,1);
     }
     .aktivitas-card.selected .aktivitas-icon-wrap svg { stroke: var(--cream); }
+    @keyframes iconPop {
+        0% { transform: scale(1) rotate(0deg); }
+        45% { transform: scale(1.28) rotate(-10deg); }
+        100% { transform: scale(1.06) rotate(0deg); }
+    }
 
     .aktivitas-card input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--brand); flex-shrink: 0; }
     .aktivitas-label { font-size: 1rem; font-weight: 700; color: var(--brand); }
@@ -129,6 +169,8 @@
     .visitor-info svg { width: 18px; height: 18px; stroke: var(--brand); flex-shrink: 0; }
 
     .btn {
+        position: relative;
+        overflow: hidden;
         width: 100%;
         background: var(--brand);
         color: var(--cream);
@@ -141,53 +183,60 @@
         box-shadow: 0 10px 24px -10px rgba(19, 39, 63, 0.55);
         transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
     }
+    .btn::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -60%;
+        width: 40%; height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.6s ease;
+    }
+    .btn:hover::after { left: 130%; }
     .btn:hover { background: var(--brand-deep); transform: translateY(-2px) scale(1.01); }
     .btn:active { transform: translateY(0) scale(0.99); }
 
-    /* ===== Mobile: fullscreen, flat, no navy peeking through ===== */
     @media (max-width: 760px) {
+        html { background: var(--cream-soft); }
         body {
-            padding: 0;
-            background: var(--cream);
-            align-items: stretch;
-        }
-        .aktivitas-stage {
-            min-height: 100vh;
-            min-height: 100svh;
+            padding: 16px 12px;
+            background: var(--cream-soft);
+            align-items: flex-start;
         }
         .stage-blob { display: none; }
+        .aktivitas-stage { min-height: 100vh; min-height: 100dvh; }
         .card {
-            width: 100%;
-            min-height: 100vh;
-            min-height: 100svh;
-            border-radius: 0;
-            box-shadow: none;
-            padding: 28px 20px 24px;
             display: flex;
             flex-direction: column;
+            border-radius: 18px;
+            box-shadow: 0 6px 20px -10px rgba(19, 39, 63, 0.25);
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
         }
-        .card-title { font-size: 1.55rem; }
-        .aktivitas-card { padding: 14px; gap: 12px; }
-        .aktivitas-icon-wrap { width: 42px; height: 42px; }
+        .card { padding: 25px 14px 20px; }
+        .card-title { font-size: 1.40rem; margin-bottom: 10px; }
+        .card-title-icon { width: 28px; height: 28px; }
+        .card-subtitle { font-size: 0.86rem; margin-bottom: 5px; }
+        .selected-counter { font-size: 0.78rem; padding: 8px 12px; margin-bottom: 15px; }
+        .visitor-info { padding: 12px 15px; font-size: 0.80rem; margin-bottom: 12px; }
+        .visitor-info svg { width: 20px; height: 20px; }
+        .aktivitas-card {
+            flex-direction: row;
+            align-items: center;
+            gap: 25px;
+            padding: 35px;
+            margin-bottom: 18px;
+        }
+        .aktivitas-card input[type="checkbox"] { width: 20px; height: 20px; }
+        .aktivitas-icon-wrap { width: 42px; height: 42px; border-radius: 11px; }
         .aktivitas-icon-wrap svg { width: 21px; height: 21px; }
-        .aktivitas-card input[type="checkbox"] { width: 18px; height: 18px; }
-        .aktivitas-label { font-size: 0.96rem; }
-        .aktivitas-desc { font-size: 0.8rem; }
-        .visitor-info { padding: 10px 12px; font-size: 0.9rem; }
-        .btn { padding: 13px 16px; font-size: 0.95rem; margin-top: auto; }
-    }
-    @media (max-width: 520px) {
-        .card { padding: 22px 16px 20px; }
-        .card-title { font-size: 1.4rem; }
-        .card-subtitle { font-size: 0.9rem; }
-        .aktivitas-card { padding: 12px; gap: 10px; }
-        .aktivitas-icon-wrap { width: 38px; height: 38px; }
-        .aktivitas-icon-wrap svg { width: 19px; height: 19px; }
-        .aktivitas-label { font-size: 0.92rem; }
-        .aktivitas-desc { font-size: 0.78rem; }
-        .visitor-info { font-size: 0.86rem; }
-        .error-msg { font-size: 0.84rem; }
-        .btn { padding: 12px 14px; }
+        .aktivitas-label { font-size: 0.98rem; }
+        .aktivitas-desc { font-size: 0.78rem; margin-top: 2px; }
+        .error-msg { margin: 3px 0 6px; font-size: 0.74rem; }
+        .btn { margin-top: auto; padding: 10px 14px; font-size: 0.84rem; }
     }
 </style>
 @endpush
@@ -196,6 +245,7 @@
 <div class="aktivitas-stage">
     <span class="stage-blob stage-blob-1"></span>
     <span class="stage-blob stage-blob-2"></span>
+    <span class="stage-blob stage-blob-3"></span>
 
     <div class="card">
     <div class="card-title">
@@ -215,10 +265,11 @@
         {{ $visitor->name }} &nbsp;|&nbsp; ID: {{ $visitor->visitor_id }}
     </div>
 
-    <div class="card-subtitle" style="margin-bottom:16px;">Pilih aktivitas hari ini <span style="color:#c0392b">(wajib pilih minimal 1)</span></div>
+    <div class="card-subtitle">Pilih aktivitas hari ini <span style="color:#c0392b">(wajib pilih minimal 1)</span></div>
+    <div class="selected-counter" id="selected-counter">0 aktivitas dipilih</div>
 
     <!-- Baca Buku -->
-    <div class="aktivitas-card" onclick="toggleCheck('cb-baca')">
+    <div class="aktivitas-card" style="animation-delay:0.08s" onclick="toggleCheck('cb-baca')">
         <input type="checkbox" id="cb-baca" value="baca_buku" onclick="event.stopPropagation()">
         <div class="aktivitas-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -234,7 +285,7 @@
     </div>
 
     <!-- Pinjam Buku -->
-    <div class="aktivitas-card" onclick="toggleCheck('cb-pinjam')">
+    <div class="aktivitas-card" style="animation-delay:0.18s" onclick="toggleCheck('cb-pinjam')">
         <input type="checkbox" id="cb-pinjam" value="pinjam_buku" onclick="event.stopPropagation()">
         <div class="aktivitas-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -252,7 +303,7 @@
     </div>
 
     <!-- Belajar Komputer -->
-    <div class="aktivitas-card" onclick="toggleCheck('cb-komputer')">
+    <div class="aktivitas-card" style="animation-delay:0.28s" onclick="toggleCheck('cb-komputer')">
         <input type="checkbox" id="cb-komputer" value="belajar_komputer" onclick="event.stopPropagation()">
         <div class="aktivitas-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -307,6 +358,16 @@ function updateCardStyle(cb) {
     } else {
         card.classList.remove('selected');
     }
+    updateCounter();
+}
+
+function updateCounter() {
+    const total = document.querySelectorAll('.aktivitas-card input[type="checkbox"]:checked').length;
+    const el = document.getElementById('selected-counter');
+    el.textContent = total + ' aktivitas dipilih';
+    el.classList.remove('bump');
+    void el.offsetWidth; // restart animation
+    el.classList.add('bump');
 }
 
 function simpanAktivitas() {
