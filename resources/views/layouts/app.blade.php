@@ -7,42 +7,65 @@
     <title>@yield('title', 'Perpustakaan Desa')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-bg: #F4F6F1;
-            --color-bg-pattern: #EAEEE4;
-            --color-surface: #FFFFFF;
-            --color-ink: #1E2A22;
-            --color-ink-soft: #647065;
-            --color-ink-faint: #97A196;
-            --color-primary: #1F5F3A;
-            --color-primary-dark: #163F27;
-            --color-primary-tint: #E7F0E9;
+            /* === Palet utama (navy + cream) === */
+            --brand: #13273F;
+            --brand-deep: #0C1B2C;
+            --cream: #E9D4C3;
+            --cream-soft: #F3E6DA;
+            --text-soft: #5b5044;
+            --white: #FFFFFF;
+
+            /* alias supaya kompatibel dgn markup lama */
+            --color-bg: var(--cream-soft);
+            --color-bg-pattern: #ECDAC7;
+            --color-surface: var(--white);
+            --color-ink: var(--brand);
+            --color-ink-soft: var(--text-soft);
+            --color-ink-faint: #A89880;
+            --color-primary: var(--brand);
+            --color-primary-dark: var(--brand-deep);
+            --color-primary-tint: rgba(19, 39, 63, 0.08);
             --color-accent: #A8823A;
             --color-accent-tint: #F6EEDD;
-            --color-border: #DFE5DA;
-            --color-danger: #AB4A34;
+            --color-border: rgba(19, 39, 63, 0.16);
+            --color-danger: #B23B3B;
             --color-danger-tint: #F8EAE6;
+
             --radius-md: 10px;
             --radius-lg: 16px;
             --font-display: 'Fraunces', Georgia, serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-mono: 'JetBrains Mono', ui-monospace, monospace;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes floatBlob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(14px, -18px) scale(1.06); }
+        }
+
+        html { scroll-behavior: smooth; }
+
         body {
             font-family: var(--font-body);
             color: var(--color-ink);
             min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            padding: 32px 16px;
             background-color: var(--color-bg);
-            background-image:
-                    radial-gradient(circle at 1px 1px, var(--color-bg-pattern) 1.5px, transparent 0);
-                background-size: 26px 26px;
+            background-image: radial-gradient(circle at 1px 1px, var(--color-bg-pattern) 1.5px, transparent 0);
+            background-size: 26px 26px;
+            animation: fadeIn 0.5s ease both;
         }
 
         .card {
@@ -50,10 +73,11 @@
             background: var(--color-surface);
             border-radius: var(--radius-lg);
             border: 1px solid var(--color-border);
-            box-shadow: 0 1px 2px rgba(30,42,34,0.04), 0 16px 40px -12px rgba(30,42,34,0.14);
+            box-shadow: 0 1px 2px rgba(19,39,63,0.06), 0 16px 40px -12px rgba(19,39,63,0.18);
             padding: 40px 36px 32px;
             width: 100%;
             max-width: 440px;
+            animation: fadeInUp 0.7s cubic-bezier(.16,1,.3,1) both;
         }
 
         .card::before {
@@ -101,7 +125,7 @@
 
         select {
             appearance: none; cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23647065' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%235b5044' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
         }
         select:invalid { color: var(--color-ink-faint); }
@@ -114,14 +138,14 @@
         }
 
         .btn {
-            width: 100%; padding: 13px; background: var(--color-primary); color: #fff; border: none;
+            width: 100%; padding: 13px; background: var(--color-primary); color: var(--cream); border: none;
             border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.96rem; font-weight: 600;
             letter-spacing: 0.01em; cursor: pointer;
-            box-shadow: 0 1px 2px rgba(22,63,39,0.15), 0 6px 14px -6px rgba(22,63,39,0.45);
-            transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+            box-shadow: 0 1px 2px rgba(19,39,63,0.15), 0 6px 14px -6px rgba(19,39,63,0.45);
+            transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
         }
-        .btn:hover { background: var(--color-primary-dark); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(22,63,39,0.2), 0 10px 18px -6px rgba(22,63,39,0.5); }
-        .btn:active { transform: translateY(0); }
+        .btn:hover { background: var(--color-primary-dark); transform: translateY(-2px) scale(1.01); box-shadow: 0 2px 4px rgba(19,39,63,0.2), 0 12px 20px -6px rgba(19,39,63,0.5); }
+        .btn:active { transform: translateY(0) scale(0.99); }
         .btn-outline { background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-primary); box-shadow: none; }
         .btn-outline:hover { background: var(--color-primary-tint); transform: none; box-shadow: none; }
 
@@ -130,26 +154,27 @@
         .link-text a:hover { text-decoration: underline; }
         .error-msg { color: var(--color-danger); font-size: 0.8rem; margin-top: 5px; min-height: 1px; }
 
-        /* Modal — styled like a stamped library card */
+        /* Modal */
         .modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(20,28,22,0.5);
-            backdrop-filter: blur(2px);
+            display: none; position: fixed; inset: 0; background: rgba(12,27,44,0.55);
+            backdrop-filter: blur(3px);
             z-index: 999; align-items: center; justify-content: center; padding: 16px;
         }
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.25s ease; }
         .modal-box {
-            background: var(--color-surface); border-radius: var(--radius-lg);
+            background: var(--cream); border-radius: var(--radius-lg);
             padding: 36px 30px 30px; text-align: center; max-width: 380px; width: 100%;
-            box-shadow: 0 24px 60px -16px rgba(20,28,22,0.35);
-            animation: modal-rise 0.25s ease;
+            box-shadow: 0 24px 60px -16px rgba(12,27,44,0.4);
+            animation: modal-rise 0.3s cubic-bezier(.16,1,.3,1);
         }
-        @keyframes modal-rise { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+        @keyframes modal-rise { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
 
-        .modal-stamp {
+        .modal-stamp, .modal-icon {
             width: 56px; height: 56px; border-radius: 50%;
-            border: 2px solid var(--color-primary); color: var(--color-primary);
+            background: linear-gradient(160deg, var(--brand), var(--brand-deep));
+            color: var(--white);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; margin: 0 auto 16px; transform: rotate(-6deg);
+            font-size: 1.5rem; margin: 0 auto 16px;
         }
         .modal-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-primary-dark); margin-bottom: 8px; }
         .modal-body { color: var(--color-ink-soft); font-size: 0.92rem; margin-bottom: 20px; line-height: 1.55; }
@@ -157,11 +182,10 @@
 
         .modal-id-card {
             position: relative; margin: 4px 0 18px; padding: 16px 18px;
-            background: var(--color-primary-tint); border: 1px dashed var(--color-primary);
-            border-radius: var(--radius-md);
+            background: var(--brand); border-radius: var(--radius-md);
         }
-        .modal-id-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 6px; }
-        .modal-id { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--color-primary-dark); letter-spacing: 0.06em; }
+        .modal-id-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream); margin-bottom: 6px; }
+        .modal-id { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--white); letter-spacing: 0.06em; }
         .modal-hint { font-size: 0.78rem; color: var(--color-ink-faint); }
     </style>
     @stack('styles')
