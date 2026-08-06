@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Visitor;
-use App\Models\Visit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VisitorController extends Controller
 {
@@ -21,30 +21,30 @@ class VisitorController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'   => 'required|string|max:100',
-            'rw'     => 'required|string|max:3',
-            'rt'     => 'required|string|max:3',
+            'name' => 'required|string|max:100',
+            'rw' => 'required|string|max:3',
+            'rt' => 'required|string|max:3',
             'alamat' => 'nullable|string|max:200',
-            'umur'   => 'required|integer|min:1|max:120',
-            'desa'   => 'required|string|max:50',
+            'umur' => 'required|integer|min:1|max:120',
+            'desa' => 'required|string|max:50',
         ]);
 
         $visitorId = Visitor::generateVisitorId($request->name);
 
         Visitor::create([
             'visitor_id' => $visitorId,
-            'name'       => $request->name,
-            'rw'         => $request->rw,
-            'rt'         => $request->rt,
-            'alamat'     => $request->alamat,
-            'umur'       => $request->umur,
-            'desa'       => $request->desa,
+            'name' => $request->name,
+            'rw' => $request->rw,
+            'rt' => $request->rt,
+            'alamat' => $request->alamat,
+            'umur' => $request->umur,
+            'desa' => $request->desa,
         ]);
 
         return response()->json([
-            'success'    => true,
+            'success' => true,
             'visitor_id' => $visitorId,
-            'name'       => $request->name,
+            'name' => $request->name,
         ]);
     }
 
@@ -54,7 +54,7 @@ class VisitorController extends Controller
 
         $visitor = Visitor::where('visitor_id', $request->visitor_id)->first();
 
-        if (!$visitor) {
+        if (! $visitor) {
             return response()->json(['success' => false, 'message' => 'ID pengunjung tidak ditemukan.'], 404);
         }
 
@@ -65,30 +65,41 @@ class VisitorController extends Controller
 
     public function aktivitas()
     {
-        if (!session('visitor')) {
+        if (! session('visitor')) {
             return redirect()->route('visitor.login');
         }
+
         return view('visitor.aktivitas', ['visitor' => session('visitor')]);
     }
 
     public function simpanAktivitas(Request $request)
     {
         $request->validate([
-            'aktivitas'   => 'required|array|min:1',
+            'aktivitas' => 'required|array|min:1',
             'aktivitas.*' => 'in:baca_buku,pinjam_buku,belajar_komputer',
         ]);
 
         $visitor = session('visitor');
 
-        if (!$visitor) {
-            return response()->json(['success' => false, 'message' => 'Sesi tidak valid.'], 401);
+        if (! $visitor) {
+            return response()->json(['success' => false, 'message' => 'Sesi tidak valid. Silakan login ulang.'], 401);
         }
 
-        Visit::create([
-            'visitor_id'       => $visitor->id,
-            'baca_buku'        => in_array('baca_buku', $request->aktivitas),
-            'pinjam_buku'      => in_array('pinjam_buku', $request->aktivitas),
-            'belajar_komputer' => in_array('belajar_komputer', $request->aktivitas),
+        $aktivitas = $request->aktivitas;
+
+        /*
+         | Postgres + Supabase pooler menolak integer 1/0 untuk kolom boolean.
+         | Laravel/PDO biasanya mengikat true/false sebagai 1/0 → error 42804.
+         | Solusi: tulis TRUE/FALSE sebagai literal SQL (bukan binding parameter).
+         */
+        DB::table('visits')->insert([
+            'visitor_id' => $visitor->id,
+            'baca_buku' => DB::raw(in_array('baca_buku', $aktivitas, true) ? 'TRUE' : 'FALSE'),
+            'pinjam_buku' => DB::raw(in_array('pinjam_buku', $aktivitas, true) ? 'TRUE' : 'FALSE'),
+            'belajar_komputer' => DB::raw(in_array('belajar_komputer', $aktivitas, true) ? 'TRUE' : 'FALSE'),
+            'visited_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         session()->forget('visitor');
