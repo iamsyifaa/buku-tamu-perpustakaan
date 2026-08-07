@@ -3,22 +3,10 @@
     "framework": null,
     "functions": {
         "api/index.php": {
-            "runtime": "vercel-php@0.9.0"
+            "runtime": "vercel-php@0.8.0"
         }
     },
     "routes": [
-        {
-            "src": "/(favicon\\.ico|robots\\.txt)",
-            "dest": "/public/$1"
-        },
-        {
-            "src": "/(img|css|js|fonts|storage)/(.*)",
-            "dest": "/public/$1/$2"
-        },
-        {
-            "src": "/build/(.*)",
-            "dest": "/public/build/$1"
-        },
         {
             "src": "/(.*)",
             "dest": "/api/index.php"
