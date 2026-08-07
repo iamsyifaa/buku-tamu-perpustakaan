@@ -138,7 +138,7 @@
             animation: fadeInUp 0.9s ease 0.3s both;
         }
 
-        /* ---- Right: form panel (compact so it fits one screen) ---- */
+        /* ---- Right: form panel ---- */
         .split-form-wrap {
             flex: 1 1 58%;
             background: var(--cream);
@@ -327,7 +327,7 @@
             font-size: 1.3rem;
         }
 
-        /* ===== Responsive ===== */
+        /* Responsive */
         @media (max-width: 840px) {
             .split-shell {
                 flex-direction: column;
@@ -523,7 +523,6 @@
             function doRegister() {
                 const btn = document.getElementById('btn-register');
 
-                // Kalau sedang proses, abaikan klik berikutnya
                 if (btn.disabled) return;
 
                 const name = document.getElementById('name').value.trim();
@@ -560,7 +559,6 @@
                 }
                 if (!valid) return;
 
-                // Kunci tombol — klik berulang tidak mengirim request baru
                 btn.disabled = true;
                 btn.textContent = 'Mendaftar...';
 
@@ -600,7 +598,6 @@
                             document.getElementById('modal-reg-name').textContent = data.name;
                             document.getElementById('modal-reg-id').textContent = data.visitor_id;
                             document.getElementById('modal-register').classList.add('active');
-                            // Tombol tetap disabled — pendaftaran sudah berhasil
                         } else {
                             document.getElementById('err-name').textContent = data.message ||
                                 'Pendaftaran gagal. Coba lagi.';

@@ -286,6 +286,7 @@
             opacity: 0.8;
         }
 
+        /* Responsive */
         @media (max-width: 840px) {
             .split-shell {
                 flex-direction: column;
