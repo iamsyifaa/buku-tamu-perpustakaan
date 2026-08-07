@@ -318,6 +318,22 @@
             transform: translateY(0) scale(0.99);
         }
 
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover {
+            background: var(--brand);
+            transform: none;
+        }
+
+        .btn:disabled:hover::after {
+            left: -60%;
+        }
+
         @media (max-width: 760px) {
             html {
                 background: var(--cream-soft);
@@ -517,7 +533,7 @@
 
             <div class="error-msg" id="err-aktivitas"></div>
 
-            <button class="btn" onclick="simpanAktivitas()">Selesai & Simpan</button>
+            <button class="btn" id="btn-simpan" type="button" onclick="simpanAktivitas()">Selesai & Simpan</button>
         </div>
     </div>
 
@@ -532,7 +548,7 @@
                 </div>
                 <div class="modal-title">Terima Kasih!</div>
                 <div class="modal-body">Kunjungan Anda telah tercatat.<br>Sampai jumpa di kunjungan berikutnya!</div>
-                <button class="btn" onclick="window.location.href='{{ route('visitor.login') }}'">Selesai</button>
+                <button class="btn" id="btn-selesai" type="button" onclick="goSelesai()">Selesai</button>
             </div>
         </div>
     @endpush
@@ -566,11 +582,24 @@
                 const el = document.getElementById('selected-counter');
                 el.textContent = total + ' aktivitas dipilih';
                 el.classList.remove('bump');
-                void el.offsetWidth; // restart animation
+                void el.offsetWidth;
                 el.classList.add('bump');
             }
 
+            function goSelesai() {
+                const btn = document.getElementById('btn-selesai');
+                if (btn && btn.disabled) return;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'Mengalihkan...';
+                }
+                window.location.href = '{{ route('visitor.login') }}';
+            }
+
             function simpanAktivitas() {
+                const btn = document.getElementById('btn-simpan');
+                if (btn.disabled) return;
+
                 const checkboxes = document.querySelectorAll('.aktivitas-card input[type="checkbox"]');
                 const aktivitas = [];
                 checkboxes.forEach(cb => {
@@ -591,6 +620,9 @@
                     return;
                 }
 
+                btn.disabled = true;
+                btn.textContent = 'Menyimpan...';
+
                 fetch('{{ route('visitor.aktivitas.post') }}', {
                         method: 'POST',
                         headers: {
@@ -603,21 +635,22 @@
                         }),
                     })
                     .then(async (res) => {
-                        // Coba baca JSON; kalau gagal (misal HTML error), tetap kasih pesan jelas
                         let data = {};
                         try {
                             data = await res.json();
                         } catch (e) {
-                            errEl.textContent = 'Server error (' + res.status + '). Cek log Laravel.';
-                            console.error('Response bukan JSON', res.status);
+                            errEl.textContent = 'Server error (' + res.status + '). Coba lagi.';
+                            btn.disabled = false;
+                            btn.textContent = 'Selesai & Simpan';
                             return;
                         }
 
                         if (!res.ok) {
-                            // Validasi gagal (422) atau sesi habis (401) dll
                             errEl.textContent = data.message ||
                                 (data.errors ? Object.values(data.errors).flat().join(' ') : null) ||
                                 ('Gagal: HTTP ' + res.status);
+                            btn.disabled = false;
+                            btn.textContent = 'Selesai & Simpan';
                             return;
                         }
 
@@ -625,11 +658,15 @@
                             document.getElementById('modal-selesai').classList.add('active');
                         } else {
                             errEl.textContent = data.message || 'Gagal menyimpan. Coba lagi.';
+                            btn.disabled = false;
+                            btn.textContent = 'Selesai & Simpan';
                         }
                     })
                     .catch((err) => {
                         console.error(err);
                         errEl.textContent = 'Tidak bisa terhubung ke server. Coba lagi.';
+                        btn.disabled = false;
+                        btn.textContent = 'Selesai & Simpan';
                     });
             }
         </script>
