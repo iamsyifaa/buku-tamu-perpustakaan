@@ -1071,3 +1071,9 @@ tbody tr:hover td {
         height: 14px;
     }
 }
+.export-menu-sub {
+    font-size: 0.68rem;
+    color: var(--color-ink-faint);
+    font-weight: 500;
+    margin-top: 1px;
+}

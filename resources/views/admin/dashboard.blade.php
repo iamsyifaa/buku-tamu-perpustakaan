@@ -309,7 +309,11 @@
                                         <line x1="16" y1="13" x2="8" y2="13" />
                                         <line x1="16" y1="17" x2="8" y2="17" />
                                     </svg>
-                                    <div class="export-menu-title">Export sebagai Excel</div>
+                                    <div>
+                                        <div class="export-menu-title">Export sebagai Excel</div>
+                                        <div class="export-menu-sub">Semua data sesuai filter (bukan hanya halaman ini)
+                                        </div>
+                                    </div>
                                 </button>
                                 <button type="button" class="export-menu-item" onclick="exportSekarang('pdf')">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -319,7 +323,11 @@
                                         <line x1="10" y1="12" x2="14" y2="12" />
                                         <line x1="10" y1="16" x2="14" y2="16" />
                                     </svg>
-                                    <div class="export-menu-title">Export sebagai PDF</div>
+                                    <div>
+                                        <div class="export-menu-title">Export sebagai PDF</div>
+                                        <div class="export-menu-sub">Semua data sesuai filter (bukan hanya halaman ini)
+                                        </div>
+                                    </div>
                                 </button>
                             </div>
                         </div>
@@ -677,11 +685,19 @@
             btnLabel.textContent = 'Menyiapkan...';
 
             try {
-                const res = await fetch(exportDataUrl + window.location.search);
+                // Filter ikut URL; param "page" dibuang supaya jelas = semua hasil filter
+                const params = new URLSearchParams(window.location.search);
+                params.delete('page');
+                const qs = params.toString();
+                const res = await fetch(exportDataUrl + (qs ? '?' + qs : ''), {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
                 const data = await res.json();
 
                 if (!data.rows || data.rows.length === 0) {
-                    alert('Tidak ada data untuk diekspor.');
+                    alert('Tidak ada data untuk diekspor (sesuai filter saat ini).');
                     return;
                 }
 
