@@ -219,7 +219,7 @@
                         mengetik.</div>
                 </div>
 
-                <!-- Pills utama -->
+                <!-- Pills utama: menentukan MODE tabel (kunjungan biasa / aktivitas tertentu / peringkat) -->
                 @php
                     $filterOptions = [
                         'semua' => [
@@ -259,26 +259,17 @@
                     @endforeach
                 </div>
 
-                <!-- Sub-filter kategori peringkat, cuma muncul pas mode Pengunjung Terbanyak -->
-                @if ($isTopMode)
-                    @php
-                        $peringkatOptions = [
-                            'semua' => 'Semua Kunjungan',
-                            'baca_buku' => 'Baca Buku',
-                            'pinjam_buku' => 'Pinjam Buku',
-                            'belajar_komputer' => 'Belajar Komputer',
-                        ];
-                    @endphp
-                    <div class="pills pills-secondary">
-                        <div class="pills-secondary-label">Urutkan berdasarkan</div>
-                        @foreach ($peringkatOptions as $key => $label)
-                            <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['peringkat' => $key])) }}"
-                                class="pill pill-sm {{ $peringkat === $key ? 'active' : '' }}">
-                                {{ $label }}
-                            </a>
-                        @endforeach
-                    </div>
-                @endif
+                @php
+                    // Dipakai untuk sub-kontrol "Urutkan" di dalam tabel Pengunjung Terbanyak,
+                    // dan untuk memberi nama kolom "Nilai" yang sesuai konteks urutan yang dipilih.
+                    $peringkatOptions = [
+                        'semua' => 'Semua Aktivitas',
+                        'baca_buku' => 'Baca Buku',
+                        'pinjam_buku' => 'Pinjam Buku',
+                        'belajar_komputer' => 'Belajar Komputer',
+                    ];
+                    $nilaiLabel = $peringkatOptions[$peringkat] ?? 'Nilai';
+                @endphp
 
                 <!-- Tabel -->
                 <div class="table-card">
@@ -289,6 +280,32 @@
                             <div class="table-header-count">
                                 {{ $isTopMode ? $topVisitors->count() : $visits->total() }} data ditemukan
                             </div>
+
+                            @if ($isTopMode)
+                                <!-- Kontrol urutan: sengaja berbentuk dropdown (bukan pill kedua) supaya
+                                     tidak terlihat mengulang pilihan "Baca Buku / Pinjam Buku / Belajar Komputer"
+                                     yang sudah ada di pills utama. Konteksnya jelas: ini mengurutkan tabel
+                                     di bawahnya, bukan memilih mode filter lagi. -->
+                                <div class="sort-select-wrap">
+                                    <label class="sort-select-label" for="peringkat-select">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                            <polyline points="17 6 23 6 23 12" />
+                                        </svg>
+                                        Urutkan
+                                    </label>
+                                    <select id="peringkat-select"
+                                        onchange="if(this.value) location.href=this.value;">
+                                        @foreach ($peringkatOptions as $key => $label)
+                                            <option
+                                                value="{{ route('admin.dashboard', array_merge(request()->query(), ['peringkat' => $key])) }}"
+                                                {{ $peringkat === $key ? 'selected' : '' }}>
+                                                {{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </div>
                         <div class="export-wrap">
                             <button type="button" class="btn-export" id="btn-export" onclick="toggleExportMenu()">
@@ -343,12 +360,12 @@
                                         <th>Nama</th>
                                         <th>Lokasi</th>
                                         <th>Aktivitas</th>
-                                        <th>Nilai ({{ $labelPeringkat }})</th>
+                                        <th>{{ $nilaiLabel }}</th>
                                         <th>Detail</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($topVisitors as $idx => $top)
+                                    @foreach ($topVisitors as $idx => $top)
                                         <tr>
                                             <td><span
                                                     class="rank-badge {{ $idx === 0 ? 'gold' : '' }}">{{ $idx + 1 }}</span>
@@ -401,21 +418,22 @@
                                             <td><button class="btn-detail"
                                                     onclick="showDetail({{ $top->id }})">Detail</button></td>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="7">
-                                                <div class="empty-msg">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="1.5" stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <circle cx="12" cy="8" r="7" />
-                                                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                                                    </svg>
-                                                    <p>Belum ada data untuk kategori ini.</p>
-                                                </div>
-                                            </td>
+                                    @endforeach
+
+                                    {{-- Baris pengisi: tabel Pengunjung Terbanyak selalu tampil fix 10 baris,
+                                         walaupun data aslinya kurang dari 10. Jumlah data sebenarnya tetap
+                                         terlihat lewat badge "X data ditemukan" di atas. --}}
+                                    @for ($i = $topVisitors->count(); $i < 10; $i++)
+                                        <tr class="row-placeholder">
+                                            <td><span class="rank-badge">{{ $i + 1 }}</span></td>
+                                            <td><span class="placeholder-text">—</span></td>
+                                            <td><span class="placeholder-text">—</span></td>
+                                            <td><span class="placeholder-text">—</span></td>
+                                            <td><span class="placeholder-text">—</span></td>
+                                            <td><span class="placeholder-text">—</span></td>
+                                            <td><span class="placeholder-text">—</span></td>
                                         </tr>
-                                    @endforelse
+                                    @endfor
                                 </tbody>
                             </table>
                         @else

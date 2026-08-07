@@ -198,6 +198,12 @@ body {
     align-items: start;
 }
 
+@media(max-width:1024px) {
+    .layout-grid {
+        grid-template-columns: 190px minmax(0, 1fr);
+    }
+}
+
 @media(max-width:900px) {
     .layout-grid {
         grid-template-columns: 1fr;
@@ -224,17 +230,24 @@ body {
     }
 }
 
+@media(max-width:360px) {
+    .stats-col {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Stat card: lebih besar & nyaman dibaca */
 .stat-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 14px;
-    padding: 14px 16px;
+    padding: 36px 30px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     box-shadow: var(--shadow-card);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
+    min-width: 0;
 }
 
 .stat-card:hover {
@@ -442,23 +455,6 @@ body {
     flex-shrink: 0;
 }
 
-.pills-secondary {
-    margin-bottom: 8px;
-    padding: 8px 10px;
-    background: var(--color-primary-tint);
-    border-radius: 10px;
-}
-
-.pills-secondary-label {
-    width: 100%;
-    font-size: 0.66rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 6px;
-}
-
 .pill {
     padding: 8px 14px;
     border-radius: 20px;
@@ -495,9 +491,65 @@ body {
     color: var(--color-accent);
 }
 
-.pill-sm {
-    padding: 5px 11px;
-    font-size: 0.74rem;
+/* ---------- Sort/urutkan control (dipakai khusus di mode "Pengunjung Terbanyak") ---------- */
+/* Sengaja dibuat berbeda dari .pill (bentuk dropdown, bukan baris tombol kedua)
+   supaya tidak terlihat duplikat dengan filter utama di atasnya. */
+.sort-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-primary-tint);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 6px 14px 6px 12px;
+    flex-shrink: 0;
+}
+
+.sort-select-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.sort-select-label svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+.sort-select-wrap select {
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    cursor: pointer;
+    outline: none;
+    padding: 2px 18px 2px 2px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='none' stroke='%2313273F' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4.5 4.5L10 1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    max-width: 170px;
+}
+
+@media(max-width:600px) {
+    .sort-select-wrap {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .sort-select-wrap select {
+        max-width: none;
+        flex: 1;
+    }
 }
 
 /* ---------- Table ---------- */
@@ -552,6 +604,12 @@ table {
     table-layout: fixed;
 }
 
+/* Jaga agar kolom tidak terlalu sempit di layar kecil — biarkan scroll
+   horizontal yang menangani, bukan teks yang gepeng. */
+.table-scroll table {
+    min-width: 700px;
+}
+
 thead {
     background: var(--color-primary-tint);
 }
@@ -586,6 +644,23 @@ tbody tr:last-child td {
 
 tbody tr:hover td {
     background: var(--color-row-hover);
+}
+
+/* Baris pengisi (placeholder) supaya tabel "Pengunjung Terbanyak" selalu
+   tampil fix 10 baris walau datanya lebih sedikit. */
+.row-placeholder .rank-badge {
+    background: var(--color-neutral-tint);
+    color: var(--color-ink-faint);
+    opacity: 0.6;
+}
+
+.row-placeholder:hover td {
+    background: inherit;
+}
+
+.placeholder-text {
+    color: var(--color-ink-faint);
+    font-size: 0.82rem;
 }
 
 .visitor-id {
@@ -746,6 +821,7 @@ tbody tr:hover td {
     border-radius: 10px;
     box-shadow: var(--shadow-card-hover);
     min-width: 210px;
+    max-width: calc(100vw - 32px);
     padding: 5px;
     z-index: 60;
 }
@@ -833,6 +909,13 @@ tbody tr:hover td {
     pointer-events: none;
 }
 
+@media(max-width:480px) {
+    .pagination {
+        justify-content: center;
+        text-align: center;
+    }
+}
+
 /* ---------- Modal ---------- */
 .modal-overlay {
     display: none;
@@ -854,8 +937,9 @@ tbody tr:hover td {
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 480px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
     box-shadow: 0 24px 60px -16px rgba(19, 39, 63, 0.35);
-    overflow: hidden;
 }
 
 .modal-head {
@@ -866,6 +950,9 @@ tbody tr:hover td {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .modal-head-title {
@@ -893,6 +980,7 @@ tbody tr:hover td {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .modal-close svg {
@@ -922,6 +1010,7 @@ tbody tr:hover td {
     font-weight: 700;
     color: var(--color-primary-dark);
     letter-spacing: 0.03em;
+    word-break: break-all;
 }
 
 .modal-id-name {
@@ -941,6 +1030,7 @@ tbody tr:hover td {
     background: var(--color-neutral-tint);
     border-radius: 8px;
     padding: 10px 12px;
+    min-width: 0;
 }
 
 .detail-item-label {
@@ -956,6 +1046,7 @@ tbody tr:hover td {
     color: var(--color-ink);
     font-weight: 600;
     margin-top: 2px;
+    overflow-wrap: break-word;
 }
 
 .stat-row {
@@ -970,6 +1061,7 @@ tbody tr:hover td {
     border-radius: 8px;
     padding: 10px 8px;
     text-align: center;
+    min-width: 0;
 }
 
 .stat-mini-num {
@@ -985,6 +1077,21 @@ tbody tr:hover td {
     font-weight: 600;
     text-transform: uppercase;
     margin-top: 2px;
+}
+
+/* ---------- Breakpoint tablet ---------- */
+@media(max-width:768px) {
+    .container {
+        padding: 14px 14px 20px;
+    }
+
+    .stat-card {
+        padding: 22px 18px;
+    }
+
+    .table-header {
+        padding: 12px 14px;
+    }
 }
 
 @media(max-width:480px) {
@@ -1048,6 +1155,10 @@ tbody tr:hover td {
         max-width: 100%;
     }
 
+    .modal-body {
+        padding: 16px;
+    }
+
     .detail-grid,
     .stat-row {
         grid-template-columns: 1fr 1fr;
@@ -1071,6 +1182,20 @@ tbody tr:hover td {
         height: 14px;
     }
 }
+
+@media(max-width:360px) {
+
+    .detail-grid,
+    .stat-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pill {
+        padding: 7px 11px;
+        font-size: 0.78rem;
+    }
+}
+
 .export-menu-sub {
     font-size: 0.68rem;
     color: var(--color-ink-faint);
