@@ -36,7 +36,7 @@
         padding: 44px 44px;
         background:
             linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
-            url('{{ asset("img/WhatsApp Image 2026-08-05 at 20.17.42.jpeg") }}');
+            url('{{ asset("img/perpus.jpeg") }}');
         background-size: cover;
         background-position: center;
         overflow: hidden;
