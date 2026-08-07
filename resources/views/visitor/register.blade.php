@@ -36,7 +36,7 @@
         padding: 44px 44px;
         background:
             linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
-            url('{{ asset("img/perpus.jpeg") }}');
+            url('https://dfowwwybmcqsrirzlhwb.supabase.co/storage/v1/object/public/assets/perpus.jpeg');
         background-size: cover;
         background-position: center;
         overflow: hidden;
