@@ -8,6 +8,18 @@
     },
     "routes": [
         {
+            "src": "/(favicon\\.ico|robots\\.txt)",
+            "dest": "/public/$1"
+        },
+        {
+            "src": "/(images|css|js|fonts|storage)/(.*)",
+            "dest": "/public/$1/$2"
+        },
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/$1"
+        },
+        {
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
