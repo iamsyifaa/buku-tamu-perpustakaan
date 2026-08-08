@@ -36,20 +36,20 @@
 
         /* ---- Left: photo panel ---- */
         .split-visual {
-            position: relative;
-            flex: 1 1 42%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 44px 44px;
-            background:
-                linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
-                url('https://dfowwwybmcqsrirzlhwb.supabase.co/storage/v1/object/public/assets/perpus.jpeg');
-            background-size: cover;
-            background-position: center;
-            overflow: hidden;
-            animation: fadeIn 0.9s ease both;
-        }
+    position: relative;
+    flex: 1 1 42%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 44px;
+    background:
+        linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
+        url('https://dfowwwybmcqsrirzlhwb.supabase.co/storage/v1/object/public/assets/perpus.jpeg');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    animation: fadeInUp 0.9s cubic-bezier(.16, 1, .3, 1) both;
+}
 
         .visual-blob {
             position: absolute;
@@ -327,32 +327,58 @@
             font-size: 1.3rem;
         }
 
+        .modal-id-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-copy-id {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--cream);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+.btn-copy-id:hover { background: rgba(255, 255, 255, 0.24); transform: translateY(-1px); }
+.btn-copy-id:active { transform: translateY(0); }
+
         /* Responsive */
         @media (max-width: 840px) {
-            .split-shell {
-                flex-direction: column;
-                height: auto;
-                min-height: 100vh;
-            }
+    .split-shell {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
 
-            .split-visual {
-                flex: none;
-                aspect-ratio: 16 / 9;
-                padding: 22px 22px;
-                justify-content: flex-start;
-                gap: 8px;
-            }
+    .split-visual {
+        flex: none;
+        aspect-ratio: 16 / 9;
+        padding: 22px 22px;
+        justify-content: space-between;
+        gap: 8px;
+    }
 
-            .visual-icon-wrap {
-                display: none;
-            }
+    .visual-icon-wrap {
+        display: none;
+    }
 
-            .split-form-wrap {
-                flex: none;
-                padding: 32px 24px 44px;
-                overflow-y: visible;
-            }
-        }
+    .split-form-wrap {
+        flex: 1;
+        padding: 32px 24px 44px;
+        overflow-y: visible;
+    }
+}
 
         @media (max-width: 560px) {
             .split-visual {
@@ -401,7 +427,7 @@
             <span class="visual-blob blob-2"></span>
             <span class="visual-blob blob-3"></span>
 
-            <div class="visual-text">Waktunya belajar dan membaca</div>
+            <div class="visual-text" id="visual-text-typed">Waktunya belajar dan membaca</div>
             <div class="visual-icon-wrap">
                 <svg class="visual-book-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M32 12C27 8 18 7 12 8.5V47C18 45.5 27 46.5 32 50" stroke="#FFFFFF" stroke-width="2.2"
@@ -420,8 +446,7 @@
                         stroke-linecap="round" opacity="0.85" />
                 </svg>
             </div>
-            <div class="visual-caption">Jadilah bagian dari generasi cerdas Desa Karyamukti. Setiap buku adalah petualangan
-                baru</div>
+            <div class="visual-caption" id="visual-caption-typed">Jadilah bagian dari generasi cerdas Desa Karyamukti. Setiap buku adalah petualangan baru</div>
         </div>
 
         <!-- Right: form panel -->
@@ -508,9 +533,18 @@
                     Selamat datang, <strong id="modal-reg-name"></strong>.
                 </div>
                 <div class="modal-id-card">
-                    <div class="modal-id-label">ID Pengunjung Anda</div>
-                    <div class="modal-id" id="modal-reg-id"></div>
-                </div>
+    <div class="modal-id-label">ID Pengunjung Anda</div>
+    <div class="modal-id-row">
+        <div class="modal-id" id="modal-reg-id"></div>
+        <button type="button" class="btn-copy-id" onclick="copyVisitorId()">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="copy-label">Salin</span>
+        </button>
+    </div>
+</div>
                 <div class="modal-hint" style="margin-bottom:18px;">Simpan ID ini untuk masuk di kunjungan berikutnya.</div>
                 <button class="btn" id="btn-go-login" type="button" onclick="goToLogin()">Lanjut ke Halaman
                     Masuk</button>
@@ -619,6 +653,54 @@
                 btn.textContent = 'Mengalihkan...';
                 window.location.href = '{{ route('visitor.login') }}';
             }
+
+            function copyVisitorId() {
+    const text = document.getElementById('modal-reg-id').textContent.trim();
+    const label = document.getElementById('copy-label');
+    navigator.clipboard.writeText(text).then(() => {
+        const original = label.textContent;
+        label.textContent = 'Tersalin!';
+        setTimeout(() => { label.textContent = original; }, 1500);
+    }).catch(() => {
+        alert('Gagal menyalin otomatis. ID: ' + text);
+    });
+}
+
+     document.addEventListener('DOMContentLoaded', function () {
+    const titleEl = document.getElementById('visual-text-typed');
+    const captionEl = document.getElementById('visual-caption-typed');
+    if (!titleEl) return;
+
+    const titleText = titleEl.textContent;
+    const captionText = captionEl ? captionEl.textContent : '';
+    titleEl.textContent = '';
+    if (captionEl) captionEl.textContent = '';
+
+    function typeText(el, text, speed, onDone) {
+        let i = 0;
+        (function type() {
+            if (i < text.length) {
+                el.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else if (onDone) {
+                onDone();
+            }
+        })();
+    }
+
+    function startTyping() {
+        typeText(titleEl, titleText, 45, function () {
+            if (captionEl) {
+                setTimeout(function () {
+                    typeText(captionEl, captionText, 25);
+                }, 200);
+            }
+        });
+    }
+
+    titleEl.addEventListener('animationend', startTyping, { once: true });
+});
         </script>
     @endpush
 @endsection

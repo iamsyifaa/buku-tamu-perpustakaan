@@ -35,20 +35,20 @@
         }
 
         .split-visual {
-            position: relative;
-            flex: 1 1 44%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 56px 48px;
-            background:
-                linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
-                url('https://dfowwwybmcqsrirzlhwb.supabase.co/storage/v1/object/public/assets/perpus.jpeg');
-            background-size: cover;
-            background-position: center;
-            overflow: hidden;
-            animation: fadeIn 0.9s ease both;
-        }
+    position: relative;
+    flex: 1 1 44%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 44px;
+    background:
+        linear-gradient(165deg, rgba(7, 14, 24, 0.45), rgba(7, 14, 24, 0.2)),
+        url('https://dfowwwybmcqsrirzlhwb.supabase.co/storage/v1/object/public/assets/perpus.jpeg');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    animation: fadeInUp 0.9s cubic-bezier(.16, 1, .3, 1) both;
+}
 
         .visual-blob {
             position: absolute;
@@ -288,29 +288,31 @@
 
         /* Responsive */
         @media (max-width: 840px) {
-            .split-shell {
-                flex-direction: column;
-            }
+    .split-shell {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
 
-            .split-visual {
-                flex: none;
-                aspect-ratio: 16 / 9;
-                min-height: unset;
-                padding: 22px 22px;
-                justify-content: flex-start;
-                gap: 8px;
-            }
+    .split-visual {
+        flex: none;
+        aspect-ratio: 16 / 9;
+        padding: 22px 22px;
+        justify-content: space-between;
+        gap: 8px;
+    }
 
-            .visual-icon-wrap {
-                display: none;
-            }
+    .visual-icon-wrap {
+        display: none;
+    }
 
-            .split-form-wrap {
-                flex: none;
-                min-height: unset;
-                padding: 40px 24px 48px;
-            }
-        }
+    .split-form-wrap {
+        flex: 1;
+        padding: 32px 24px 44px;
+        overflow-y: visible;
+    }
+}
 
         @media (max-width: 560px) {
             .split-visual {
@@ -353,7 +355,7 @@
             <span class="visual-blob blob-2"></span>
             <span class="visual-blob blob-3"></span>
 
-            <div class="visual-text">Siap Untuk Membaca Hari Ini?</div>
+            <div class="visual-text" id="visual-text-typed">Siap Untuk Membaca Hari Ini?</div>
             <div class="visual-icon-wrap">
                 <svg class="visual-book-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M32 12C27 8 18 7 12 8.5V47C18 45.5 27 46.5 32 50" stroke="#FFFFFF" stroke-width="2.2"
@@ -372,7 +374,7 @@
                         stroke-linecap="round" opacity="0.85" />
                 </svg>
             </div>
-            <div class="visual-caption">Ilmu tidak pernah habis bagi mereka yang terus mencari. Lanjutkan eksplorasimu</div>
+            <div class="visual-caption" id="visual-caption-typed">Ilmu tidak pernah habis bagi mereka yang terus mencari. Lanjutkan eksplorasimu</div>
         </div>
 
         <div class="split-form-wrap">
@@ -473,6 +475,42 @@
             document.getElementById('visitor_id').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') doLogin();
             });
+
+            document.addEventListener('DOMContentLoaded', function () {
+    const titleEl = document.getElementById('visual-text-typed');
+    const captionEl = document.getElementById('visual-caption-typed');
+    if (!titleEl) return;
+
+    const titleText = titleEl.textContent;
+    const captionText = captionEl ? captionEl.textContent : '';
+    titleEl.textContent = '';
+    if (captionEl) captionEl.textContent = '';
+
+    function typeText(el, text, speed, onDone) {
+        let i = 0;
+        (function type() {
+            if (i < text.length) {
+                el.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else if (onDone) {
+                onDone();
+            }
+        })();
+    }
+
+    function startTyping() {
+        typeText(titleEl, titleText, 45, function () {
+            if (captionEl) {
+                setTimeout(function () {
+                    typeText(captionEl, captionText, 25);
+                }, 200);
+            }
+        });
+    }
+
+    titleEl.addEventListener('animationend', startTyping, { once: true });
+});
         </script>
     @endpush
 @endsection

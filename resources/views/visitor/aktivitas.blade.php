@@ -335,36 +335,37 @@
         }
 
         @media (max-width: 760px) {
-            html {
-                background: var(--cream-soft);
-            }
+    html {
+        background: var(--cream-soft);
+    }
 
-            body {
-                padding: 16px 12px;
-                background: var(--cream-soft);
-                align-items: flex-start;
-            }
+    body {
+        padding: 0;
+        background: var(--cream-soft);
+        align-items: flex-start;
+    }
 
-            .stage-blob {
-                display: none;
-            }
+    .stage-blob {
+        display: none;
+    }
 
-            .aktivitas-stage {
-                min-height: 100vh;
-                min-height: 100dvh;
-            }
+    .aktivitas-stage {
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
 
-            .card {
-                display: flex;
-                flex-direction: column;
-                border-radius: 18px;
-                box-shadow: 0 6px 20px -10px rgba(19, 39, 63, 0.25);
-                min-height: 100vh;
-                min-height: 100dvh;
-                width: 100%;
-                max-width: 100%;
-                margin: 0 auto;
-            }
+    .card {
+        display: flex;
+        flex-direction: column;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
 
             .card {
                 padding: 25px 14px 20px;
